@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: resistance-maps
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://mongo1:27017,mongo2:27018,mongo3:27019/resistance?replicaSet=rs0}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:http://keycloak:8080/realms/resistance}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO

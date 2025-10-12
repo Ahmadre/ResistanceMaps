@@ -1,0 +1,17 @@
+{
+  "app": {
+    "title": "ResistanceMaps"
+  },
+  "map": {
+    "search": "Suchen...",
+    "open_now": "Jetzt geöffnet",
+    "nearest": "Nächste",
+    "filters": "Filter",
+    "account": {
+      "menu": {
+        "settings": "Kontoeinstellungen",
+        "logout": "Abmelden"
+      }
+    }
+  }
+}

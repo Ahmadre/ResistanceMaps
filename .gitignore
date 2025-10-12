@@ -1,0 +1,131 @@
+# Global ignores for this monorepo
+# --------------------------------
+
+# OS / Editor / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+*.code-workspace
+
+# Node / general logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+logs/
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Top-level build artifacts
+/build/
+/dist/
+/tmp/
+/out/
+
+# ======================================
+# Flutter / Dart (resistance-maps)
+# ======================================
+# Dart & Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+
+# Flutter build outputs
+resistance-maps/.dart_tool/
+resistance-maps/.packages
+resistance-maps/build/
+resistance-maps/ios/Flutter/Flutter.framework
+resistance-maps/ios/Flutter/Flutter.podspec
+resistance-maps/ios/.symlinks/
+resistance-maps/ios/Pods/
+resistance-maps/ios/Flutter/Generated.xcconfig
+resistance-maps/ios/Flutter/ephemeral/
+resistance-maps/ios/Runner/GeneratedPluginRegistrant.*
+resistance-maps/macos/Flutter/GeneratedPluginRegistrant.swift
+resistance-maps/macos/Flutter/ephemeral/
+resistance-maps/macos/Pods/
+resistance-maps/android/.gradle/
+resistance-maps/android/local.properties
+resistance-maps/android/app/release/
+resistance-maps/android/app/debug/
+resistance-maps/android/app/profile/
+
+# Flutter web build artifacts
+resistance-maps/web/.dart_tool/
+resistance-maps/build/
+
+# Flutter IDE configs
+resistance-maps/.idea/
+resistance-maps/.vscode/
+
+# Do not ignore Flutter lockfile
+!resistance-maps/pubspec.lock
+
+# ======================================
+# Java / Kotlin / Gradle (backend)
+# ======================================
+backend/.gradle/
+backend/build/
+backend/out/
+backend/bin/
+backend/.kotlin/
+backend/.idea/
+
+# Gradle Wrapper - keep wrapper files
+!backend/gradlew
+!backend/gradlew.bat
+!backend/gradle/wrapper/gradle-wrapper.jar
+!backend/gradle/wrapper/gradle-wrapper.properties
+
+# Spring Boot
+backend/*.log
+backend/*.pid
+backend/*.iml
+backend/.project
+backend/.classpath
+backend/.settings/
+backend/.factorypath
+
+# ======================================
+# Docker / Compose / Local data
+# ======================================
+.env
+.env.*
+*.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Docker local volumes or temp files (ensure not to ignore actual compose files)
+**/.docker/
+**/.tmp/
+
+# Mongo data volumes (if mounted locally; prefer Docker volumes instead)
+**/mongodb-data/
+**/mongo1_data/
+**/mongo2_data/
+**/mongo3_data/
+
+# Keycloak import cache inside container not needed in repo
+infra/keycloak/data/
+
+# ======================================
+# Misc
+# ======================================
+coverage/
+reports/
+
+# Avoid committing secrets; allow example templates
+secrets*
+!secrets.example*

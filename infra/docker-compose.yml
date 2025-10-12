@@ -1,0 +1,87 @@
+version: "3.9"
+services:
+  mongo1:
+    image: mongo:7
+    container_name: mongo1
+    command: ["mongod","--replSet","rs0","--bind_ip_all","--port","27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data:/data/db
+
+  mongo2:
+    image: mongo:7
+    container_name: mongo2
+    command: ["mongod","--replSet","rs0","--bind_ip_all","--port","27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo2_data:/data/db
+
+  mongo3:
+    image: mongo:7
+    container_name: mongo3
+    command: ["mongod","--replSet","rs0","--bind_ip_all","--port","27019"]
+    ports:
+      - "27019:27019"
+    volumes:
+      - mongo3_data:/data/db
+
+  mongo-setup:
+    image: mongo:7
+    container_name: mongo-setup
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    entrypoint: ["bash","/scripts/mongo-init.sh"]
+    volumes:
+      - ./scripts:/scripts
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    command: ["start-dev","--import-realm"]
+    environment:
+      KC_HTTP_PORT: 8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+
+  backend:
+    build:
+      context: ../backend
+    container_name: backend
+    depends_on:
+      - mongo-setup
+      - rabbitmq
+      - keycloak
+    environment:
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo1:27017,mongo2:27018,mongo3:27019/resistance?replicaSet=rs0}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/resistance
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
