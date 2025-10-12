@@ -160,7 +160,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                // Dunkles Karten-Theme (CartoDB Dark Matter)
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                retinaMode: true,
                 userAgentPackageName: 'dev.resistance.maps',
               ),
               MarkerClusterLayerWidget(
@@ -270,8 +273,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                         }
                         final m = items[index];
                         final selected = state.selectedMarkerId == m.id;
-                        return ListTile(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        const glowColor = Color(0xFF00F5A4);
+                        final radius = BorderRadius.circular(10);
+                        final tile = ListTile(
+                          shape: RoundedRectangleBorder(borderRadius: radius),
                           tileColor: selected ? const Color(0xFF2A2B30) : const Color(0xFF1A1B1F),
                           title: Text(m.title),
                           subtitle: Text('(${m.lat.toStringAsFixed(5)}, ${m.lng.toStringAsFixed(5)})'),
@@ -292,6 +297,19 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             }
                             context.read<MarkerBloc>().add(SelectMarker(m.id));
                           },
+                        );
+                        return Container(
+                          decoration: selected
+                              ? BoxDecoration(
+                                  borderRadius: radius,
+                                  border: Border.all(color: glowColor, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 12, spreadRadius: 1),
+                                    BoxShadow(color: glowColor.withOpacity(0.05), blurRadius: 1, spreadRadius: .1),
+                                  ],
+                                )
+                              : null,
+                          child: tile,
                         );
                       },
                     ),
@@ -605,31 +623,27 @@ class _MarkerIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double size = selected ? 30 : 24;
+    // Kein Glow auf der Karte – Marker bleiben neutral, unabhängig von "selected".
+    final double size = selected ? 24 : 24; // gleicher Size, "selected" bewusst ohne visuelle Änderung
+
+    // Standard-Pin (Fallback)
     if (iconUrl == null || iconUrl!.isEmpty) {
       const red = Color(0xFFE53935);
       return Stack(
         alignment: Alignment.center,
         children: [
-          Icon(Icons.location_on, color: Colors.black, size: size + 4),
-          Icon(Icons.location_on, color: red, size: size),
+          Icon(Icons.location_on, color: Colors.white, size: size + 4),
+          const Icon(Icons.location_on, color: red, size: 24),
         ],
       );
     }
+
+    // Bild-/SVG-Icon ohne Glow/Ring
     final isSvg = iconUrl!.toLowerCase().endsWith('.svg');
-    final border = BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(color: Colors.black, width: 2),
-      boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 6, spreadRadius: 1)],
-    );
-    return Container(
-      decoration: border,
-      padding: const EdgeInsets.all(2),
-      child: ClipOval(
-        child: isSvg
-            ? SvgPicture.network(iconUrl!, width: size, height: size, fit: BoxFit.cover)
-            : Image.network(iconUrl!, width: size, height: size, fit: BoxFit.cover),
-      ),
+    return ClipOval(
+      child: isSvg
+          ? SvgPicture.network(iconUrl!, width: size, height: size, fit: BoxFit.cover)
+          : Image.network(iconUrl!, width: size, height: size, fit: BoxFit.cover),
     );
   }
 }
