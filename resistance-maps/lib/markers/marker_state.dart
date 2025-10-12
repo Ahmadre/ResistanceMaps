@@ -61,5 +61,14 @@ class MarkerState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [loading, markers, error, selectedMarkerId, paging, hasMore, page, viewportKey];
+  List<Object?> get props => [
+    loading,
+    markers,
+    error,
+    selectedMarkerId,
+    paging,
+    hasMore,
+    page,
+    viewportKey,
+  ];
 }

@@ -7,7 +7,10 @@ class AuthState extends Equatable {
 
   const AuthState({required this.isLoading, this.session, this.error});
 
-  const AuthState.unauthenticated() : isLoading = false, session = null, error = null;
+  const AuthState.unauthenticated()
+    : isLoading = false,
+      session = null,
+      error = null;
   const AuthState.loading() : isLoading = true, session = null, error = null;
   const AuthState.failure(this.error) : isLoading = false, session = null;
   const AuthState.authenticated(this.session) : isLoading = false, error = null;

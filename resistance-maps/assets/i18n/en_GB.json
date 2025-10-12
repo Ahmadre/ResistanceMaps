@@ -12,6 +12,23 @@
         "settings": "Account Settings",
         "logout": "Logout"
       }
+    },
+    "markers": {
+      "add": "Add marker",
+      "createTitle": "Create new marker",
+      "editTitle": "Edit marker",
+      "lat": "Lat",
+      "lng": "Lng",
+      "deleteTitle": "Delete marker?",
+      "deleteContent": "This action cannot be undone."
     }
+  },
+  "common": {
+    "title": "Title",
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }

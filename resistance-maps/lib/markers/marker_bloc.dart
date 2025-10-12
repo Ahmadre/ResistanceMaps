@@ -15,6 +15,9 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
     on<SelectMarker>(_onSelect);
     on<ViewportChanged>(_onViewportChanged, transformer: _debounce(const Duration(milliseconds: 200)));
     on<LoadNextPage>(_onLoadNextPage);
+    on<CreateMarker>(_onCreate);
+    on<UpdateMarker>(_onUpdate);
+    on<DeleteMarker>(_onDelete);
   }
 
   final MarkerRepository repo;
@@ -73,6 +76,55 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
     } catch (e) {
       if (e is DioException && CancelToken.isCancel(e)) return; // ignore cancelled
       emit(state.copyWith(loading: false, paging: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onCreate(CreateMarker event, Emitter<MarkerState> emit) async {
+    try {
+      final created = await repo.createMarker(
+        title: event.title,
+        lat: event.lat,
+        lng: event.lng,
+        description: event.description,
+        tags: event.tags,
+        visibility: event.visibility,
+      );
+      emit(state.copyWith(markers: [created, ...state.markers]));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdate(UpdateMarker event, Emitter<MarkerState> emit) async {
+    try {
+      final updated = await repo.updateMarker(
+        event.id,
+        title: event.title,
+        lat: event.lat,
+        lng: event.lng,
+        description: event.description,
+        tags: event.tags,
+        visibility: event.visibility,
+      );
+      final newList = state.markers.map((m) => m.id == updated.id ? updated : m).toList();
+      emit(state.copyWith(markers: newList));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onDelete(DeleteMarker event, Emitter<MarkerState> emit) async {
+    try {
+      await repo.deleteMarker(event.id);
+      final newList = state.markers.where((m) => m.id != event.id).toList();
+      emit(
+        state.copyWith(
+          markers: newList,
+          selectedMarkerId: state.selectedMarkerId == event.id ? null : state.selectedMarkerId,
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
     }
   }
 }

@@ -3,21 +3,23 @@ package dev.resistance.maps.config
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import org.springframework.web.filter.CorsFilter
 
 @Configuration
 class CorsConfig {
     @Bean
-    fun corsFilter(): CorsFilter {
+    fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration().apply {
             allowCredentials = true
-            addAllowedOriginPattern("*")
-            addAllowedHeader("*")
-            addAllowedMethod("*")
+            // Replace with specific origin in production
+            allowedOrigins = listOf("http://localhost:7357")
+            allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("*")
+            exposedHeaders = listOf("Authorization", "Content-Type")
         }
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
-        return CorsFilter(source)
+        return source
     }
 }

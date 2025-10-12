@@ -24,7 +24,8 @@ RouteMap get appRoutes => RouteMap(
 );
 
 class GuardedPage extends Page {
-  const GuardedPage({required this.allowed, required this.child}) : super(key: const ValueKey('guarded'));
+  const GuardedPage({required this.allowed, required this.child})
+    : super(key: const ValueKey('guarded'));
   final bool Function(BuildContext) allowed;
   final Widget child;
 

@@ -37,7 +37,8 @@ class _AuthCallbackPageState extends State<AuthCallbackPage> {
     return Scaffold(
       body: Center(
         child: BlocListener<AuthBloc, AuthState>(
-          listenWhen: (prev, curr) => prev.isLoading != curr.isLoading || prev.session != curr.session,
+          listenWhen: (prev, curr) =>
+              prev.isLoading != curr.isLoading || prev.session != curr.session,
           listener: (context, state) {
             if (!state.isLoading) {
               Routemaster.of(context).replace('/');

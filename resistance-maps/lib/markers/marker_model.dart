@@ -17,9 +17,19 @@ class MarkerModel with _$MarkerModel {
     final title = (json['title'] ?? '').toString();
     final latRaw = json['lat'];
     final lngRaw = json['lng'];
-    final lat = latRaw is num ? latRaw.toDouble() : double.parse(latRaw.toString());
-    final lng = lngRaw is num ? lngRaw.toDouble() : double.parse(lngRaw.toString());
+    final lat = latRaw is num
+        ? latRaw.toDouble()
+        : double.parse(latRaw.toString());
+    final lng = lngRaw is num
+        ? lngRaw.toDouble()
+        : double.parse(lngRaw.toString());
     final iconUrl = (json['iconUrl'] ?? json['icon_url']) as String?;
-    return MarkerModel(id: id, title: title, lat: lat, lng: lng, iconUrl: iconUrl);
+    return MarkerModel(
+      id: id,
+      title: title,
+      lat: lat,
+      lng: lng,
+      iconUrl: iconUrl,
+    );
   }
 }

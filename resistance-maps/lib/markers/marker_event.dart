@@ -39,3 +39,45 @@ class ViewportChanged extends MarkerEvent {
 class LoadNextPage extends MarkerEvent {
   const LoadNextPage();
 }
+
+class CreateMarker extends MarkerEvent {
+  const CreateMarker({
+    required this.title,
+    required this.lat,
+    required this.lng,
+    this.description,
+    this.tags,
+    this.visibility,
+  });
+  final String title;
+  final double lat;
+  final double lng;
+  final String? description;
+  final List<String>? tags;
+  final String? visibility;
+
+  @override
+  List<Object?> get props => [title, lat, lng, description, tags, visibility];
+}
+
+class UpdateMarker extends MarkerEvent {
+  const UpdateMarker(this.id, {this.title, this.lat, this.lng, this.description, this.tags, this.visibility});
+  final String id;
+  final String? title;
+  final double? lat;
+  final double? lng;
+  final String? description;
+  final List<String>? tags;
+  final String? visibility;
+
+  @override
+  List<Object?> get props => [id, title, lat, lng, description, tags, visibility];
+}
+
+class DeleteMarker extends MarkerEvent {
+  const DeleteMarker(this.id);
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}

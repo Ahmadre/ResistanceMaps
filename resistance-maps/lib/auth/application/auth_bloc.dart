@@ -49,12 +49,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignOut(SignOutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignOut(
+    SignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     await _auth.signOut();
     emit(const AuthState.unauthenticated());
   }
 
-  Future<void> _onCompleteFromRedirect(CompleteSignInFromRedirect event, Emitter<AuthState> emit) async {
+  Future<void> _onCompleteFromRedirect(
+    CompleteSignInFromRedirect event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthState.loading());
     try {
       final result = await _oidc.completeFromRedirect();

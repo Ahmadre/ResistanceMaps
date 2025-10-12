@@ -2,6 +2,7 @@ package dev.resistance.maps.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
@@ -13,9 +14,11 @@ class SecurityConfig {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .cors { }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/public/**", "/api/markers/public", "/actuator/health").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/public/**", "/api/markers/public", "/api/markers/public/**", "/actuator/health").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }

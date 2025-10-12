@@ -12,6 +12,23 @@
         "settings": "Kontoeinstellungen",
         "logout": "Abmelden"
       }
+    },
+    "markers": {
+      "add": "Marker hinzufügen",
+      "createTitle": "Neuen Marker erstellen",
+      "editTitle": "Marker bearbeiten",
+      "lat": "Lat",
+      "lng": "Lng",
+      "deleteTitle": "Marker löschen?",
+      "deleteContent": "Dieser Vorgang kann nicht rückgängig gemacht werden."
     }
+  },
+  "common": {
+    "title": "Titel",
+    "create": "Erstellen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
   }
 }

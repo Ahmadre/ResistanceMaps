@@ -18,7 +18,9 @@ class ResistanceMapsApp extends StatelessWidget {
     final theme = AppTheme.dark();
 
     return BlocProvider(
-      create: (_) => AuthBloc(AuthService(SessionStorage()), OidcClientWrapper.fromEnv())..add(const AppStarted()),
+      create: (_) =>
+          AuthBloc(AuthService(SessionStorage()), OidcClientWrapper.fromEnv())
+            ..add(const AppStarted()),
       child: MaterialApp.router(
         onGenerateTitle: (ctx) => I18Next.of(ctx)!.t('app.title'),
         theme: theme,
@@ -26,7 +28,9 @@ class ResistanceMapsApp extends StatelessWidget {
           ...GlobalMaterialLocalizations.delegates,
           I18NextLocalizationDelegate(
             locales: appLocales,
-            dataSource: AssetBundleLocalizationDataSource(bundlePath: 'assets/i18n'),
+            dataSource: AssetBundleLocalizationDataSource(
+              bundlePath: 'assets/i18n',
+            ),
           ),
         ],
         supportedLocales: appLocales,

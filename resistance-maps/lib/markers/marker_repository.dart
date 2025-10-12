@@ -42,4 +42,50 @@ class MarkerRepository {
     final int pageSize = (data['size'] as num?)?.toInt() ?? size;
     return PageResult(items: items, hasMore: !last, page: number, size: pageSize);
   }
+
+  Future<MarkerModel> createMarker({
+    required String title,
+    required double lat,
+    required double lng,
+    String? description,
+    List<String>? tags,
+    String? visibility, // e.g. PUBLIC/PRIVATE if supported
+  }) async {
+    final Response res = await api.dio.post(
+      '/api/markers',
+      data: {
+        'title': title,
+        'lat': lat,
+        'lng': lng,
+        if (description != null) 'description': description,
+        if (tags != null) 'tags': tags,
+        if (visibility != null) 'visibility': visibility,
+      },
+    );
+    return MarkerModel.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<MarkerModel> updateMarker(
+    String id, {
+    String? title,
+    double? lat,
+    double? lng,
+    String? description,
+    List<String>? tags,
+    String? visibility,
+  }) async {
+    final Map<String, dynamic> body = {};
+    if (title != null) body['title'] = title;
+    if (lat != null) body['lat'] = lat;
+    if (lng != null) body['lng'] = lng;
+    if (description != null) body['description'] = description;
+    if (tags != null) body['tags'] = tags;
+    if (visibility != null) body['visibility'] = visibility;
+    final Response res = await api.dio.put('/api/markers/$id', data: body);
+    return MarkerModel.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteMarker(String id) async {
+    await api.dio.delete('/api/markers/$id');
+  }
 }

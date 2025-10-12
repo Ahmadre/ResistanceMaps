@@ -18,9 +18,17 @@ class AccountSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AuthBloc>().state;
     final session = state.session;
-    final payload = session != null ? _decode(session.accessToken) : const <String, dynamic>{};
-    final username = payload['preferred_username'] ?? payload['email'] ?? payload['name'] ?? '-';
-    final roles = (payload['realm_access']?['roles'] as List?)?.cast<String>() ?? const [];
+    final payload = session != null
+        ? _decode(session.accessToken)
+        : const <String, dynamic>{};
+    final username =
+        payload['preferred_username'] ??
+        payload['email'] ??
+        payload['name'] ??
+        '-';
+    final roles =
+        (payload['realm_access']?['roles'] as List?)?.cast<String>() ??
+        const [];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Account Settings')),
@@ -29,7 +37,10 @@ class AccountSettingsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Benutzer: $username', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(
+              'Benutzer: $username',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 8),
             Text('Rollen: ${roles.join(', ')}'),
             const SizedBox(height: 8),
@@ -39,7 +50,9 @@ class AccountSettingsPage extends StatelessWidget {
             const SizedBox(height: 12),
             const Text('Profil', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Hier kannst du künftig Profilangaben ändern (Platzhalter).'),
+            const Text(
+              'Hier kannst du künftig Profilangaben ändern (Platzhalter).',
+            ),
           ],
         ),
       ),

@@ -15,5 +15,11 @@ class Session {
   @HiveField(4)
   final List<String> roles;
 
-  const Session({required this.accessToken, this.refreshToken, this.idToken, this.expiresAt, this.roles = const []});
+  const Session({
+    required this.accessToken,
+    this.refreshToken,
+    this.idToken,
+    this.expiresAt,
+    this.roles = const [],
+  });
 }

@@ -16,7 +16,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${OIDC_ISSUER_URI:http://keycloak:8080/realms/resistance}
+          jwk-set-uri: ${OIDC_JWKS_URI:http://keycloak:8080/realms/resistance/protocol/openid-connect/certs}
 
 management:
   endpoints:

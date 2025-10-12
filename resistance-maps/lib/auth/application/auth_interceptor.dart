@@ -14,10 +14,15 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final session = _storage.load();
-    final token = session?.accessToken;
-    if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token';
+    // Do not attach token to public endpoints
+    final path = options.path;
+    final isPublic = path.contains('/api/markers/public');
+    if (!isPublic) {
+      final session = _storage.load();
+      final token = session?.accessToken;
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     super.onRequest(options, handler);
   }
@@ -41,9 +46,14 @@ class AuthInterceptor extends Interceptor {
 
   Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
     final dio = Dio();
-    final session = _storage.load();
-    if (session != null && session.accessToken.isNotEmpty) {
-      requestOptions.headers['Authorization'] = 'Bearer ${session.accessToken}';
+    // Respect same rule on retry (no auth for public endpoints)
+    final path = requestOptions.path;
+    final isPublic = path.contains('/api/markers/public');
+    if (!isPublic) {
+      final session = _storage.load();
+      if (session != null && session.accessToken.isNotEmpty) {
+        requestOptions.headers['Authorization'] = 'Bearer ${session.accessToken}';
+      }
     }
     return dio.fetch(requestOptions);
   }

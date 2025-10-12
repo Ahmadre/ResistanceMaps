@@ -3,13 +3,15 @@ import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import '../../core/env.dart';
-import '../../core/platform_origin_stub.dart' if (dart.library.html) '../../core/platform_origin_web.dart';
+import '../../core/platform_origin_stub.dart'
+    if (dart.library.html) '../../core/platform_origin_web.dart';
 import 'package:dio/dio.dart';
 
 class OidcClientConfig {
   final String issuer; // e.g. http://localhost:8081/realms/resistance
   final String clientId; // e.g. resistance-mobile
-  final String redirectUri; // e.g. com.resistance.app://callback or http://localhost:port/callback for web
+  final String
+  redirectUri; // e.g. com.resistance.app://callback or http://localhost:port/callback for web
   final List<String> scopes;
   const OidcClientConfig({
     required this.issuer,
@@ -41,15 +43,25 @@ class OidcClientWrapper {
   factory OidcClientWrapper.fromEnv() {
     final origin = webOrigin();
     final autoWebRedirect = origin != null ? '$origin/callback' : null;
-    final redirect = Env.oidcRedirectUri.isNotEmpty ? Env.oidcRedirectUri : (autoWebRedirect ?? Env.oidcRedirectUri);
+    final redirect = Env.oidcRedirectUri.isNotEmpty
+        ? Env.oidcRedirectUri
+        : (autoWebRedirect ?? Env.oidcRedirectUri);
     return OidcClientWrapper(
-      OidcClientConfig(issuer: Env.oidcIssuerPublic, clientId: Env.oidcClientId, redirectUri: redirect),
+      OidcClientConfig(
+        issuer: Env.oidcIssuerPublic,
+        clientId: Env.oidcClientId,
+        redirectUri: redirect,
+      ),
     );
   }
 
   Future<OidcAuthResult> signIn() async {
-    final authEndpoint = Uri.parse('${cfg.issuer}/protocol/openid-connect/auth');
-    final tokenEndpoint = Uri.parse('${cfg.issuer}/protocol/openid-connect/token');
+    final authEndpoint = Uri.parse(
+      '${cfg.issuer}/protocol/openid-connect/auth',
+    );
+    final tokenEndpoint = Uri.parse(
+      '${cfg.issuer}/protocol/openid-connect/token',
+    );
 
     final client = OAuth2Client(
       authorizeUrl: authEndpoint.toString(),
@@ -87,8 +99,12 @@ class OidcClientWrapper {
   /// If there's nothing to resume, it will fetch using existing session info.
   Future<OidcAuthResult?> completeFromRedirect() async {
     try {
-      final authEndpoint = Uri.parse('${cfg.issuer}/protocol/openid-connect/auth');
-      final tokenEndpoint = Uri.parse('${cfg.issuer}/protocol/openid-connect/token');
+      final authEndpoint = Uri.parse(
+        '${cfg.issuer}/protocol/openid-connect/auth',
+      );
+      final tokenEndpoint = Uri.parse(
+        '${cfg.issuer}/protocol/openid-connect/token',
+      );
 
       final client = OAuth2Client(
         authorizeUrl: authEndpoint.toString(),
@@ -97,7 +113,12 @@ class OidcClientWrapper {
         customUriScheme: Uri.parse(cfg.redirectUri).scheme,
       );
 
-      final helper = OAuth2Helper(client, clientId: cfg.clientId, scopes: cfg.scopes, enablePKCE: true);
+      final helper = OAuth2Helper(
+        client,
+        clientId: cfg.clientId,
+        scopes: cfg.scopes,
+        enablePKCE: true,
+      );
 
       final token = await helper.getToken();
       final access = token?.accessToken ?? '';
@@ -119,11 +140,19 @@ class OidcClientWrapper {
 
   Future<OidcAuthResult?> refresh(String refreshToken) async {
     if (refreshToken.isEmpty) return null;
-    final tokenEndpoint = Uri.parse('${cfg.issuer}/protocol/openid-connect/token');
-    final dio = Dio(BaseOptions(contentType: Headers.formUrlEncodedContentType));
+    final tokenEndpoint = Uri.parse(
+      '${cfg.issuer}/protocol/openid-connect/token',
+    );
+    final dio = Dio(
+      BaseOptions(contentType: Headers.formUrlEncodedContentType),
+    );
     final res = await dio.post(
       tokenEndpoint.toString(),
-      data: {'grant_type': 'refresh_token', 'client_id': cfg.clientId, 'refresh_token': refreshToken},
+      data: {
+        'grant_type': 'refresh_token',
+        'client_id': cfg.clientId,
+        'refresh_token': refreshToken,
+      },
     );
     final data = res.data as Map<String, dynamic>;
     final access = data['access_token'] as String?;
@@ -131,7 +160,9 @@ class OidcClientWrapper {
     final idToken = data['id_token'] as String?;
     final refreshOut = data['refresh_token'] as String? ?? refreshToken;
     final expiresIn = (data['expires_in'] as num?)?.toInt();
-    final expiresAt = expiresIn != null ? DateTime.now().add(Duration(seconds: expiresIn)) : null;
+    final expiresAt = expiresIn != null
+        ? DateTime.now().add(Duration(seconds: expiresIn))
+        : null;
     final roles = _extractRolesFromAccess(access);
     return OidcAuthResult(
       accessToken: access,
