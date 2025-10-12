@@ -29,6 +29,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   final _searchCtrl = TextEditingController();
   bool _sortAsc = true;
   late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
+  bool _sidebarOpen = true;
+  bool _sidebarInit = false;
   late final SessionStorage _sessionStorage;
   late final OidcClientWrapper _oidc;
   late final ApiClient _client;
@@ -61,6 +63,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final isNarrow = MediaQuery.of(context).size.width < 900;
+    if (!_sidebarInit) {
+      // Mobile-first: auf schmalen Bildschirmen standardmäßig geschlossen
+      _sidebarOpen = !isNarrow;
+      _sidebarInit = true;
+    }
     return Scaffold(
       body: BlocProvider.value(
         value: _markerBloc,
@@ -73,119 +81,120 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           },
           child: Row(
             children: [
-              Container(
-                width: 320,
-                color: const Color(0xFF0E0F12),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TextField(
-                        controller: _searchCtrl,
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          hintText: I18Next.of(context)!.t('map.search'),
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: const Color(0xFF232428),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+              if (_sidebarOpen)
+                Container(
+                  width: 320,
+                  color: const Color(0xFF0E0F12),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: TextField(
+                          controller: _searchCtrl,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            hintText: I18Next.of(context)!.t('map.search'),
+                            prefixIcon: const Icon(Icons.search),
+                            filled: true,
+                            fillColor: const Color(0xFF232428),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            label: Text(_sortAsc ? 'A → Z' : 'Z → A'),
-                            selected: true,
-                            onSelected: (_) => setState(() => _sortAsc = !_sortAsc),
-                          ),
-                          const SizedBox(width: 8),
-                          if (_searchCtrl.text.isNotEmpty)
-                            TextButton.icon(
-                              onPressed: () {
-                                _searchCtrl.clear();
-                                setState(() {});
-                              },
-                              icon: const Icon(Icons.clear, size: 18),
-                              label: const Text('Filter zurücksetzen'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            FilterChip(
+                              label: Text(_sortAsc ? 'A → Z' : 'Z → A'),
+                              selected: true,
+                              onSelected: (_) => setState(() => _sortAsc = !_sortAsc),
                             ),
-                        ],
+                            const SizedBox(width: 8),
+                            if (_searchCtrl.text.isNotEmpty)
+                              TextButton.icon(
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  setState(() {});
+                                },
+                                icon: const Icon(Icons.clear, size: 18),
+                                label: const Text('Filter zurücksetzen'),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: BlocBuilder<MarkerBloc, MarkerState>(
-                        builder: (context, state) {
-                          if (state.loading) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          final lower = _searchCtrl.text.toLowerCase();
-                          final items = _sortedFiltered(
-                            state.markers,
-                            (m) => m.title.toLowerCase().contains(lower),
-                            (a, b) => _sortAsc ? a.title.compareTo(b.title) : b.title.compareTo(a.title),
-                          );
-                          return NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              final metrics = notification.metrics;
-                              if (metrics.pixels >= metrics.maxScrollExtent - 200) {
-                                if (state.hasMore && !state.paging) {
-                                  context.read<MarkerBloc>().add(const LoadNextPage());
+                      Expanded(
+                        child: BlocBuilder<MarkerBloc, MarkerState>(
+                          builder: (context, state) {
+                            if (state.loading) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            final lower = _searchCtrl.text.toLowerCase();
+                            final items = _sortedFiltered(
+                              state.markers,
+                              (m) => m.title.toLowerCase().contains(lower),
+                              (a, b) => _sortAsc ? a.title.compareTo(b.title) : b.title.compareTo(a.title),
+                            );
+                            return NotificationListener<ScrollNotification>(
+                              onNotification: (notification) {
+                                final metrics = notification.metrics;
+                                if (metrics.pixels >= metrics.maxScrollExtent - 200) {
+                                  if (state.hasMore && !state.paging) {
+                                    context.read<MarkerBloc>().add(const LoadNextPage());
+                                  }
                                 }
-                              }
-                              return false;
-                            },
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(8),
-                              itemCount: state.paging ? items.length + 1 : items.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                if (index >= items.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                return false;
+                              },
+                              child: ListView.separated(
+                                padding: const EdgeInsets.all(8),
+                                itemCount: state.paging ? items.length + 1 : items.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                itemBuilder: (context, index) {
+                                  if (index >= items.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
                                       ),
-                                    ),
+                                    );
+                                  }
+                                  final m = items[index];
+                                  final selected = state.selectedMarkerId == m.id;
+                                  return ListTile(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    tileColor: selected ? const Color(0xFF2A2B30) : const Color(0xFF1A1B1F),
+                                    title: Text(m.title),
+                                    subtitle: Text('(${m.lat.toStringAsFixed(5)}, ${m.lng.toStringAsFixed(5)})'),
+                                    trailing: m.iconUrl != null && m.iconUrl!.isNotEmpty
+                                        ? SizedBox(
+                                            width: 28,
+                                            height: 28,
+                                            child: ClipOval(
+                                              child: m.iconUrl!.toLowerCase().endsWith('.svg')
+                                                  ? SvgPicture.network(m.iconUrl!, fit: BoxFit.cover)
+                                                  : Image.network(m.iconUrl!, fit: BoxFit.cover),
+                                            ),
+                                          )
+                                        : null,
+                                    onTap: () => context.read<MarkerBloc>().add(SelectMarker(m.id)),
                                   );
-                                }
-                                final m = items[index];
-                                final selected = state.selectedMarkerId == m.id;
-                                return ListTile(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  tileColor: selected ? const Color(0xFF2A2B30) : const Color(0xFF1A1B1F),
-                                  title: Text(m.title),
-                                  subtitle: Text('(${m.lat.toStringAsFixed(5)}, ${m.lng.toStringAsFixed(5)})'),
-                                  trailing: m.iconUrl != null && m.iconUrl!.isNotEmpty
-                                      ? SizedBox(
-                                          width: 28,
-                                          height: 28,
-                                          child: ClipOval(
-                                            child: m.iconUrl!.toLowerCase().endsWith('.svg')
-                                                ? SvgPicture.network(m.iconUrl!, fit: BoxFit.cover)
-                                                : Image.network(m.iconUrl!, fit: BoxFit.cover),
-                                          ),
-                                        )
-                                      : null,
-                                  onTap: () => context.read<MarkerBloc>().add(SelectMarker(m.id)),
-                                );
-                              },
-                            ),
-                          );
-                        },
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               Expanded(
                 child: Stack(
                   children: [
@@ -220,19 +229,26 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                               )
                               .toList();
 
+                          // Sichere Ableitung der Anfangskamera:
+                          final points = visibleMarkers.map((m) => m.point).toList();
+                          CameraFit? fit;
+                          if (points.length >= 2) {
+                            final bounds = LatLngBounds.fromPoints(points);
+                            final hasArea = (bounds.north != bounds.south) || (bounds.east != bounds.west);
+                            if (hasArea) {
+                              fit = CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48));
+                            }
+                          }
+
                           return FlutterMap(
                             mapController: _mapController.mapController,
                             options: MapOptions(
                               initialZoom: 12,
-                              initialCenter: visibleMarkers.isEmpty
-                                  ? const LatLng(52.52, 13.405)
-                                  : LatLng(visibleMarkers.first.point.latitude, visibleMarkers.first.point.longitude),
-                              initialCameraFit: visibleMarkers.isNotEmpty
-                                  ? CameraFit.bounds(
-                                      bounds: LatLngBounds.fromPoints(visibleMarkers.map((m) => m.point).toList()),
-                                      padding: const EdgeInsets.all(48),
-                                    )
-                                  : null,
+                              initialCenter: points.isNotEmpty
+                                  ? LatLng(points.first.latitude, points.first.longitude)
+                                  : const LatLng(52.52, 13.405),
+                              // Verwende CameraFit nur, wenn gültige Bounds vorhanden sind
+                              initialCameraFit: fit,
                               onMapEvent: (evt) {
                                 if (evt is MapEventMoveEnd ||
                                     evt is MapEventFlingAnimationEnd ||
@@ -284,112 +300,141 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                         },
                       ),
                     ),
+                    // Scrim wie Drawer: auf schmalen Viewports außerhalb der Sidebar zum Schließen tippen
+                    if (isNarrow && _sidebarOpen)
+                      Positioned.fill(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => setState(() => _sidebarOpen = false),
+                          child: Container(color: Colors.black26),
+                        ),
+                      ),
                     // Detail card overlay
                     Positioned(
                       left: 16,
                       top: 16,
-                      child: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          final isAuthed = state.session != null;
-                          if (!isAuthed) {
-                            return ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                backgroundColor: const Color(0xFF1A1B1F),
-                                foregroundColor: Colors.white,
-                              ),
-                              onPressed: () => context.read<AuthBloc>().add(const SignInRequested()),
-                              icon: const Icon(Icons.login, size: 18),
-                              label: const Text('Login'),
-                            );
-                          }
-                          // Build avatar from token claims: prefer image URL, fallback to initials from name/username/email
-                          final session = state.session!;
-                          final token = session.idToken ?? session.accessToken;
-                          Map<String, dynamic> claims = const {};
-                          try {
-                            claims = Jwt.parseJwt(token);
-                          } catch (_) {}
-
-                          String displayName = '';
-                          final name = claims['name']?.toString();
-                          final preferred = claims['preferred_username']?.toString();
-                          final email = claims['email']?.toString();
-                          if (name != null && name.isNotEmpty) {
-                            displayName = name;
-                          } else if (preferred != null && preferred.isNotEmpty) {
-                            displayName = preferred;
-                          } else if (email != null && email.isNotEmpty) {
-                            displayName = email.split('@').first;
-                          }
-
-                          final pictureUrl =
-                              (claims['picture'] ?? claims['avatar_url'] ?? claims['profilePicture'] ?? claims['image'])
-                                  ?.toString();
-
-                          Widget avatar;
-                          if (pictureUrl != null && pictureUrl.isNotEmpty) {
-                            avatar = CircleAvatar(
-                              radius: 16,
-                              backgroundColor: const Color(0xFF2A2B30),
-                              backgroundImage: NetworkImage(pictureUrl),
-                            );
-                          } else if (displayName.trim().isNotEmpty) {
-                            final parts = displayName.trim().split(RegExp(r"\s+"));
-                            String initials = parts.take(2).map((p) => p.isNotEmpty ? p[0] : '').join();
-                            if (initials.isEmpty && displayName.isNotEmpty) {
-                              initials = displayName[0];
-                            }
-                            avatar = CircleAvatar(
-                              radius: 16,
-                              backgroundColor: const Color(0xFF2A2B30),
-                              child: Text(initials.toUpperCase(), style: const TextStyle(color: Colors.white)),
-                            );
-                          } else {
-                            avatar = const Icon(Icons.account_circle, color: Colors.white);
-                          }
-                          return PopupMenuButton<String>(
-                            tooltip: 'Account',
-                            icon: avatar,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Hamburger-Toggle
+                          Material(
                             color: const Color(0xFF1A1B1F),
-                            padding: EdgeInsets.zero,
-                            onSelected: (value) {
-                              switch (value) {
-                                case 'settings':
-                                  Routemaster.of(context).push('/account');
-                                  break;
-                                case 'logout':
-                                  context.read<AuthBloc>().add(const SignOutRequested());
-                                  break;
+                            shape: const CircleBorder(),
+                            child: IconButton(
+                              tooltip: _sidebarOpen ? 'Menü schließen' : 'Menü öffnen',
+                              icon: Icon(_sidebarOpen ? Icons.menu_open : Icons.menu, color: Colors.white),
+                              onPressed: () => setState(() => _sidebarOpen = !_sidebarOpen),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Account/Login
+                          BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              final isAuthed = state.session != null;
+                              if (!isAuthed) {
+                                return ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    backgroundColor: const Color(0xFF1A1B1F),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => context.read<AuthBloc>().add(const SignInRequested()),
+                                  icon: const Icon(Icons.login, size: 18),
+                                  label: const Text('Login'),
+                                );
                               }
+                              // Build avatar from token claims: prefer image URL, fallback to initials from name/username/email
+                              final session = state.session!;
+                              final token = session.idToken ?? session.accessToken;
+                              Map<String, dynamic> claims = const {};
+                              try {
+                                claims = Jwt.parseJwt(token);
+                              } catch (_) {}
+
+                              String displayName = '';
+                              final name = claims['name']?.toString();
+                              final preferred = claims['preferred_username']?.toString();
+                              final email = claims['email']?.toString();
+                              if (name != null && name.isNotEmpty) {
+                                displayName = name;
+                              } else if (preferred != null && preferred.isNotEmpty) {
+                                displayName = preferred;
+                              } else if (email != null && email.isNotEmpty) {
+                                displayName = email.split('@').first;
+                              }
+
+                              final pictureUrl =
+                                  (claims['picture'] ??
+                                          claims['avatar_url'] ??
+                                          claims['profilePicture'] ??
+                                          claims['image'])
+                                      ?.toString();
+
+                              Widget avatar;
+                              if (pictureUrl != null && pictureUrl.isNotEmpty) {
+                                avatar = CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: const Color(0xFF2A2B30),
+                                  backgroundImage: NetworkImage(pictureUrl),
+                                );
+                              } else if (displayName.trim().isNotEmpty) {
+                                final parts = displayName.trim().split(RegExp(r"\\s+"));
+                                String initials = parts.take(2).map((p) => p.isNotEmpty ? p[0] : '').join();
+                                if (initials.isEmpty && displayName.isNotEmpty) {
+                                  initials = displayName[0];
+                                }
+                                avatar = CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: const Color(0xFF2A2B30),
+                                  child: Text(initials.toUpperCase(), style: const TextStyle(color: Colors.white)),
+                                );
+                              } else {
+                                avatar = const Icon(Icons.account_circle, color: Colors.white);
+                              }
+                              return PopupMenuButton<String>(
+                                tooltip: 'Account',
+                                icon: avatar,
+                                color: const Color(0xFF1A1B1F),
+                                padding: EdgeInsets.zero,
+                                onSelected: (value) {
+                                  switch (value) {
+                                    case 'settings':
+                                      Routemaster.of(context).push('/account');
+                                      break;
+                                    case 'logout':
+                                      context.read<AuthBloc>().add(const SignOutRequested());
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  PopupMenuItem<String>(
+                                    value: 'settings',
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const Icon(Icons.settings, color: Colors.white),
+                                      title: Text(
+                                        I18Next.of(context)!.t('map.account.menu.settings'),
+                                        style: const TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  const PopupMenuDivider(height: 8),
+                                  PopupMenuItem<String>(
+                                    value: 'logout',
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const Icon(Icons.logout, color: Colors.white),
+                                      title: Text(
+                                        I18Next.of(context)!.t('map.account.menu.logout'),
+                                        style: const TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
                             },
-                            itemBuilder: (context) => [
-                              PopupMenuItem<String>(
-                                value: 'settings',
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.settings, color: Colors.white),
-                                  title: Text(
-                                    I18Next.of(context)!.t('map.account.menu.settings'),
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                              const PopupMenuDivider(height: 8),
-                              PopupMenuItem<String>(
-                                value: 'logout',
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.logout, color: Colors.white),
-                                  title: Text(
-                                    I18Next.of(context)!.t('map.account.menu.logout'),
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                          ),
+                        ],
                       ),
                     ),
                     // Detail card overlay
@@ -452,8 +497,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                           BlocBuilder<MarkerBloc, MarkerState>(
                             builder: (context, state) {
                               final sel = state.selected;
-                              return OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
+                              return ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   foregroundColor: Colors.white,
                                 ),
@@ -578,11 +623,21 @@ class _MarkerIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final double size = selected ? 30 : 24;
     if (iconUrl == null || iconUrl!.isEmpty) {
-      return Icon(Icons.location_on, color: selected ? const Color(0xFFE53935) : const Color(0xFF90CAF9), size: size);
+      // Standard-Pin mit schwarzer Umrandung und roter Farbe (ähnlich Google Maps)
+      const red = Color(0xFFE53935);
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.location_on, color: Colors.black, size: size + 4), // Outline
+          // Vorderer Pin in Rot
+          Icon(Icons.location_on, color: red, size: size),
+        ],
+      );
     }
     final isSvg = iconUrl!.toLowerCase().endsWith('.svg');
     final border = BoxDecoration(
       shape: BoxShape.circle,
+      border: Border.all(color: Colors.black, width: 2),
       boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 6, spreadRadius: 1)],
     );
     return Container(
