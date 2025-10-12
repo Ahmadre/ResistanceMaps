@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Build Flutter Web (Repo Pages base path)
         # Wir verwenden die Standard-ENV Defaults aus lib/core/env.dart (keine dart-defines nötig)
         # Für GitHub Repository Pages muss das base-href auf "/<repo>/" gesetzt werden.
