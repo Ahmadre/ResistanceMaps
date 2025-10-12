@@ -1,0 +1,64 @@
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'resistance-maps/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resistance-maps
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Enable web support
+        run: flutter config --enable-web
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web (Repo Pages base path)
+        # Wir verwenden die Standard-ENV Defaults aus lib/core/env.dart (keine dart-defines nötig)
+        # Für GitHub Repository Pages muss das base-href auf "/<repo>/" gesetzt werden.
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Add SPA fallback (404.html)
+        # GitHub Pages liefert bei Deep-Links 404. Wir spiegeln index.html nach 404.html als SPA-Fallback.
+        run: cp build/web/index.html build/web/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: resistance-maps/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
