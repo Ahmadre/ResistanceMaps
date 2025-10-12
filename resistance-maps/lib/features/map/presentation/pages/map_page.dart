@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:i18next/i18next.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:latlong2/latlong.dart';
@@ -165,6 +166,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: true,
                 userAgentPackageName: 'dev.resistance.maps',
+                tileProvider: CancellableNetworkTileProvider(),
               ),
               MarkerClusterLayerWidget(
                 options: MarkerClusterLayerOptions(
