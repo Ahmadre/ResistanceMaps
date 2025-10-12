@@ -131,6 +131,7 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
 
 extension _MarkerBlocPriv on MarkerBloc {
   void _onSelect(SelectMarker event, Emitter<MarkerState> emit) {
+    // selectedMarkerId kann jetzt explizit auf null gesetzt werden (Deselect)
     emit(state.copyWith(selectedMarkerId: event.markerId));
   }
 

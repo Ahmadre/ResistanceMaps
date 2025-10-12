@@ -31,11 +31,14 @@ class MarkerState extends Equatable {
       page = 0,
       viewportKey = '';
 
+  // Sentinel für Felder, die explizit auf null gesetzt werden sollen
+  static const Object _unset = Object();
+
   MarkerState copyWith({
     bool? loading,
     List<MarkerModel>? markers,
     String? error,
-    String? selectedMarkerId,
+    Object? selectedMarkerId = _unset, // erlaubt explizites null
     bool? paging,
     bool? hasMore,
     int? page,
@@ -44,7 +47,7 @@ class MarkerState extends Equatable {
     loading: loading ?? this.loading,
     markers: markers ?? this.markers,
     error: error,
-    selectedMarkerId: selectedMarkerId ?? this.selectedMarkerId,
+    selectedMarkerId: identical(selectedMarkerId, _unset) ? this.selectedMarkerId : selectedMarkerId as String?,
     paging: paging ?? this.paging,
     hasMore: hasMore ?? this.hasMore,
     page: page ?? this.page,
@@ -61,14 +64,5 @@ class MarkerState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    loading,
-    markers,
-    error,
-    selectedMarkerId,
-    paging,
-    hasMore,
-    page,
-    viewportKey,
-  ];
+  List<Object?> get props => [loading, markers, error, selectedMarkerId, paging, hasMore, page, viewportKey];
 }
