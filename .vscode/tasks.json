@@ -1,0 +1,106 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start local infra (Docker)",
+      "detail": "Starts MongoDB, RabbitMQ and Keycloak for local debugging",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.local.yml up -d",
+      "options": {
+        "cwd": "${workspaceFolder}/infra"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "infra"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop local infra (Docker)",
+      "detail": "Stops and removes local debug infrastructure containers",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.local.yml down",
+      "options": {
+        "cwd": "${workspaceFolder}/infra"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "infra"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend – bootRun (Debug)",
+      "detail": "Starts Spring Boot via Gradle with JDWP on port 5005 (suspend=y). VS Code attaches automatically.",
+      "type": "shell",
+      "command": "./gradlew bootRun --debug-jvm",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "MONGODB_URI": "mongodb://localhost:27017/resistance?directConnection=true",
+          "RABBITMQ_HOST": "localhost",
+          "RABBITMQ_PORT": "5672",
+          "RABBITMQ_USER": "guest",
+          "RABBITMQ_PASSWORD": "guest",
+          "OIDC_JWKS_URI": "http://localhost:8081/realms/resistance/protocol/openid-connect/certs"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "spring-boot-jdwp",
+        "pattern": {
+          "regexp": "Listening for transport dt_socket at address: (\\d+)",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^> Task :bootRun",
+          "endsPattern": "Listening for transport dt_socket at address:"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "backend"
+      }
+    },
+    {
+      "label": "Backend – Gradle build",
+      "detail": "Compiles the backend without running tests",
+      "type": "shell",
+      "command": "./gradlew classes -x test",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": ["$gradle"]
+    },
+    {
+      "label": "Backend – run tests",
+      "detail": "Runs the backend test suite via Gradle",
+      "type": "shell",
+      "command": "./gradlew test",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": ["$gradle"]
+    }
+  ]
+}

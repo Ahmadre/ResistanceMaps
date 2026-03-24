@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // =========================================================================
+    // Backend – Kotlin/Spring Boot
+    // Uses Gradle bootRun + JDWP remote attach (avoids "Not a valid java project").
+    // preLaunchTask starts ./gradlew bootRun --debug-jvm in the background and
+    // waits until the JVM signals it is listening on port 5005 before attaching.
+    // Prerequisite: start infra first via "Start local infra (Docker)" task.
+    // =========================================================================
+    {
+      "type": "java",
+      "name": "Backend – Spring Boot (Debug)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "preLaunchTask": "Backend – bootRun (Debug)"
+    },
+
+    // =========================================================================
+    // Frontend – Flutter Web
+    // Runs on http://localhost:7357 to match the Keycloak redirect URI.
+    // Requires: Dart / Flutter extension (Dart-Code.flutter)
+    // =========================================================================
+    {
+      "name": "Flutter – Web (Debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "${workspaceFolder}/resistance-maps/lib/main.dart",
+      "cwd": "${workspaceFolder}/resistance-maps",
+      "flutterMode": "debug",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-port",
+        "7357",
+        "--dart-define=API_BASE=http://localhost:8080",
+        "--dart-define=OIDC_ISSUER_PUBLIC=http://localhost:8081/realms/resistance",
+        "--dart-define=OIDC_CLIENT_ID=resistance-mobile",
+        "--dart-define=OIDC_REDIRECT_URI=http://localhost:7357/callback"
+      ]
+    },
+
+    // =========================================================================
+    // Compound – start both at once
+    // The attach config's preLaunchTask handles starting the backend process.
+    // =========================================================================
+    {
+      "name": "Debug All (local)",
+      "type": "compound",
+      "request": "launch",
+      "configurations": [
+        "Backend – Spring Boot (Debug)",
+        "Flutter – Web (Debug)"
+      ],
+      "stopAll": true
+    }
+  ]
+}
