@@ -12,8 +12,7 @@ part of 'marker_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$MarkerModel {
@@ -31,9 +30,8 @@ mixin _$MarkerModel {
 /// @nodoc
 abstract class $MarkerModelCopyWith<$Res> {
   factory $MarkerModelCopyWith(
-    MarkerModel value,
-    $Res Function(MarkerModel) then,
-  ) = _$MarkerModelCopyWithImpl<$Res, MarkerModel>;
+          MarkerModel value, $Res Function(MarkerModel) then) =
+      _$MarkerModelCopyWithImpl<$Res, MarkerModel>;
   @useResult
   $Res call({String id, String title, double lat, double lng, String? iconUrl});
 }
@@ -57,31 +55,28 @@ class _$MarkerModelCopyWithImpl<$Res, $Val extends MarkerModel>
     Object? lng = null,
     Object? iconUrl = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            title: null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                      as String,
-            lat: null == lat
-                ? _value.lat
-                : lat // ignore: cast_nullable_to_non_nullable
-                      as double,
-            lng: null == lng
-                ? _value.lng
-                : lng // ignore: cast_nullable_to_non_nullable
-                      as double,
-            iconUrl: freezed == iconUrl
-                ? _value.iconUrl
-                : iconUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      lat: null == lat
+          ? _value.lat
+          : lat // ignore: cast_nullable_to_non_nullable
+              as double,
+      lng: null == lng
+          ? _value.lng
+          : lng // ignore: cast_nullable_to_non_nullable
+              as double,
+      iconUrl: freezed == iconUrl
+          ? _value.iconUrl
+          : iconUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
   }
 }
 
@@ -89,9 +84,8 @@ class _$MarkerModelCopyWithImpl<$Res, $Val extends MarkerModel>
 abstract class _$$MarkerModelImplCopyWith<$Res>
     implements $MarkerModelCopyWith<$Res> {
   factory _$$MarkerModelImplCopyWith(
-    _$MarkerModelImpl value,
-    $Res Function(_$MarkerModelImpl) then,
-  ) = __$$MarkerModelImplCopyWithImpl<$Res>;
+          _$MarkerModelImpl value, $Res Function(_$MarkerModelImpl) then) =
+      __$$MarkerModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String title, double lat, double lng, String? iconUrl});
@@ -102,9 +96,8 @@ class __$$MarkerModelImplCopyWithImpl<$Res>
     extends _$MarkerModelCopyWithImpl<$Res, _$MarkerModelImpl>
     implements _$$MarkerModelImplCopyWith<$Res> {
   __$$MarkerModelImplCopyWithImpl(
-    _$MarkerModelImpl _value,
-    $Res Function(_$MarkerModelImpl) _then,
-  ) : super(_value, _then);
+      _$MarkerModelImpl _value, $Res Function(_$MarkerModelImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -115,43 +108,40 @@ class __$$MarkerModelImplCopyWithImpl<$Res>
     Object? lng = null,
     Object? iconUrl = freezed,
   }) {
-    return _then(
-      _$MarkerModelImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        title: null == title
-            ? _value.title
-            : title // ignore: cast_nullable_to_non_nullable
-                  as String,
-        lat: null == lat
-            ? _value.lat
-            : lat // ignore: cast_nullable_to_non_nullable
-                  as double,
-        lng: null == lng
-            ? _value.lng
-            : lng // ignore: cast_nullable_to_non_nullable
-                  as double,
-        iconUrl: freezed == iconUrl
-            ? _value.iconUrl
-            : iconUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
-      ),
-    );
+    return _then(_$MarkerModelImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      lat: null == lat
+          ? _value.lat
+          : lat // ignore: cast_nullable_to_non_nullable
+              as double,
+      lng: null == lng
+          ? _value.lng
+          : lng // ignore: cast_nullable_to_non_nullable
+              as double,
+      iconUrl: freezed == iconUrl
+          ? _value.iconUrl
+          : iconUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$MarkerModelImpl implements _MarkerModel {
-  const _$MarkerModelImpl({
-    required this.id,
-    required this.title,
-    required this.lat,
-    required this.lng,
-    this.iconUrl,
-  });
+  const _$MarkerModelImpl(
+      {required this.id,
+      required this.title,
+      required this.lat,
+      required this.lng,
+      this.iconUrl});
 
   @override
   final String id;
@@ -192,13 +182,12 @@ class _$MarkerModelImpl implements _MarkerModel {
 }
 
 abstract class _MarkerModel implements MarkerModel {
-  const factory _MarkerModel({
-    required final String id,
-    required final String title,
-    required final double lat,
-    required final double lng,
-    final String? iconUrl,
-  }) = _$MarkerModelImpl;
+  const factory _MarkerModel(
+      {required final String id,
+      required final String title,
+      required final double lat,
+      required final double lng,
+      final String? iconUrl}) = _$MarkerModelImpl;
 
   @override
   String get id;

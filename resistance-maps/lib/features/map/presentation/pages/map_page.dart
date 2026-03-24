@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:i18next/i18next.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:latlong2/latlong.dart';
@@ -166,7 +165,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: true,
                 userAgentPackageName: 'dev.resistance.maps',
-                tileProvider: CancellableNetworkTileProvider(),
+                tileProvider: NetworkTileProvider(),
               ),
               MarkerClusterLayerWidget(
                 options: MarkerClusterLayerOptions(
@@ -306,8 +305,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                   borderRadius: radius,
                                   border: Border.all(color: glowColor, width: 1.5),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 12, spreadRadius: 1),
-                                    BoxShadow(color: glowColor.withOpacity(0.05), blurRadius: 1, spreadRadius: .1),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 12, spreadRadius: 1),
+                                    BoxShadow(color: glowColor.withValues(alpha: 0.05), blurRadius: 1, spreadRadius: .1),
                                   ],
                                 )
                               : null,
