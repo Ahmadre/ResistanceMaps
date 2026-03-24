@@ -30,3 +30,5 @@ management:
 logging:
   level:
     root: INFO
+    # Log security decisions at DEBUG for local troubleshooting
+    org.springframework.security: ${LOG_SECURITY:INFO}
