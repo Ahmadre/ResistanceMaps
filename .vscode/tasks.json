@@ -39,7 +39,7 @@
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "MONGODB_URI": "mongodb://localhost:27017/resistance?directConnection=true",
+          "MONGODB_URI": "mongodb://root:resistance@localhost:27017/resistance?directConnection=true&authSource=admin",
           "RABBITMQ_HOST": "localhost",
           "RABBITMQ_PORT": "5672",
           "RABBITMQ_USER": "guest",

@@ -3,7 +3,7 @@
 #
 # Note: The Spring Boot backend must connect to MongoDB via directConnection=true
 # because the replica-set members advertise their container hostnames.
-# Use MONGODB_URI=mongodb://localhost:27017/resistance?directConnection=true
+# Use MONGODB_URI=mongodb://root:resistance@localhost:27017/resistance?directConnection=true&authSource=admin
 name: resistance-local
 
 services:
