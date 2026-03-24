@@ -1,0 +1,135 @@
+# Local debugging infrastructure – backend and frontend run on the host.
+# Start with: docker compose -f docker-compose.local.yml up -d
+#
+# Note: The Spring Boot backend must connect to MongoDB via directConnection=true
+# because the replica-set members advertise their container hostnames.
+# Use MONGODB_URI=mongodb://localhost:27017/resistance?directConnection=true
+name: resistance-local
+
+services:
+  ###########################################################################
+  # MongoDB ReplicaSet (primary + secondary + arbiter)
+  ###########################################################################
+
+  mongodb-primary:
+    image: docker.io/bitnami/mongodb:${MONGODB_VERSION:-latest}
+    container_name: mongodb-primary
+    hostname: mongodb-primary
+    environment:
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: ${MONGODB_REPLICA_SET_NAME:-rs0}
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:-resistancereplicasetkey}
+      MONGODB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-resistance}
+      MONGODB_ADVERTISED_HOSTNAME: mongodb-primary
+      MONGODB_PORT_NUMBER: 27017
+      MONGODB_ENABLE_JOURNAL: "true"
+    volumes:
+      - mongodb_primary_data:/bitnami/mongodb:rw
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+    networks:
+      - resistance-local
+
+  mongodb-secondary:
+    image: docker.io/bitnami/mongodb:${MONGODB_VERSION:-latest}
+    container_name: mongodb-secondary
+    hostname: mongodb-secondary
+    depends_on:
+      mongodb-primary:
+        condition: service_healthy
+    environment:
+      MONGODB_REPLICA_SET_MODE: secondary
+      MONGODB_REPLICA_SET_NAME: ${MONGODB_REPLICA_SET_NAME:-rs0}
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:-resistancereplicasetkey}
+      MONGODB_INITIAL_PRIMARY_HOST: mongodb-primary
+      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: 27017
+      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-resistance}
+      MONGODB_ADVERTISED_HOSTNAME: mongodb-secondary
+      MONGODB_PORT_NUMBER: 27017
+      MONGODB_ENABLE_JOURNAL: "true"
+    volumes:
+      - mongodb_secondary_data:/bitnami/mongodb:rw
+    ports:
+      - "127.0.0.1:27018:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 120s
+    networks:
+      - resistance-local
+
+  mongodb-arbiter:
+    image: docker.io/bitnami/mongodb:${MONGODB_VERSION:-latest}
+    container_name: mongodb-arbiter
+    hostname: mongodb-arbiter
+    depends_on:
+      mongodb-primary:
+        condition: service_healthy
+      mongodb-secondary:
+        condition: service_healthy
+    environment:
+      MONGODB_REPLICA_SET_MODE: arbiter
+      MONGODB_REPLICA_SET_NAME: ${MONGODB_REPLICA_SET_NAME:-rs0}
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:-resistancereplicasetkey}
+      MONGODB_INITIAL_PRIMARY_HOST: mongodb-primary
+      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: 27017
+      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-resistance}
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+    networks:
+      - resistance-local
+
+  ###########################################################################
+  # RabbitMQ
+  ###########################################################################
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq-local
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    networks:
+      - resistance-local
+
+  ###########################################################################
+  # Keycloak
+  ###########################################################################
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak-local
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_HTTP_PORT: 8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+    networks:
+      - resistance-local
+
+volumes:
+  mongodb_primary_data:
+  mongodb_secondary_data:
+
+networks:
+  resistance-local:
+    name: resistance-local
