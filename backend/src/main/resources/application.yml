@@ -1,5 +1,9 @@
 server:
   port: ${PORT:8080}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 60MB
 
 spring:
   application:
@@ -7,16 +11,15 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://mongo1:27017,mongo2:27018,mongo3:27019/resistance?replicaSet=rs0}
-  rabbitmq:
-    host: ${RABBITMQ_HOST:rabbitmq}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USER:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: ${OIDC_JWKS_URI:http://keycloak:8080/realms/resistance/protocol/openid-connect/certs}
+
+app:
+  storage:
+    upload-dir: ${UPLOAD_DIR:./uploads}
 
 management:
   endpoints:
@@ -30,5 +33,4 @@ management:
 logging:
   level:
     root: INFO
-    # Log security decisions at DEBUG for local troubleshooting
     org.springframework.security: ${LOG_SECURITY:INFO}

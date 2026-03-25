@@ -1,17 +1,17 @@
-package dev.resistance.maps.marker
+package dev.resistance.maps.route
 
+import dev.resistance.maps.marker.Visibility
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document("markers")
-data class Marker(
+@Document("routes")
+data class MapRoute(
     @Id val id: String? = null,
     val title: String,
     val description: String? = null,
-    val lat: Double,
-    val lng: Double,
+    val waypoints: List<GeoPoint> = emptyList(),
     @Indexed val visibility: Visibility = Visibility.PUBLIC,
     @Indexed val createdBy: String,
     @Indexed val groupId: String? = null,

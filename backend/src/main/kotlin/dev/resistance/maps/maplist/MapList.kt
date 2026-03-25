@@ -1,25 +1,20 @@
-package dev.resistance.maps.marker
+package dev.resistance.maps.maplist
 
+import dev.resistance.maps.marker.Visibility
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document("markers")
-data class Marker(
+@Document("map_lists")
+data class MapList(
     @Id val id: String? = null,
     val title: String,
     val description: String? = null,
-    val lat: Double,
-    val lng: Double,
     @Indexed val visibility: Visibility = Visibility.PUBLIC,
     @Indexed val createdBy: String,
-    @Indexed val groupId: String? = null,
-    val tags: Set<String> = emptySet(),
-    val coverImageId: String? = null,
-    val imageIds: List<String> = emptyList(),
-    val documentIds: List<String> = emptyList(),
-    val webLink: String? = null,
+    val markerIds: List<String> = emptyList(),
+    val routeIds: List<String> = emptyList(),
     @Indexed val expiresAt: Instant? = null,
     val passwordHash: String? = null,
     val shareToken: String? = null,

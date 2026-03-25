@@ -33,8 +33,6 @@
   "roles": {
     "realm": [
       { "name": "USER" },
-      { "name": "INTERN" },
-      { "name": "ADMIN" },
       { "name": "SUPERADMIN" }
     ]
   }

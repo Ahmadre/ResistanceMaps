@@ -40,9 +40,6 @@ dependencies {
     // Mongo
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
-    // RabbitMQ
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
-
     // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

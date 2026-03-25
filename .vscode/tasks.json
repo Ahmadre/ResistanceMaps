@@ -40,10 +40,6 @@
         "cwd": "${workspaceFolder}/backend",
         "env": {
           "MONGODB_URI": "mongodb://root:resistance@localhost:27017/resistance?directConnection=true&authSource=admin",
-          "RABBITMQ_HOST": "localhost",
-          "RABBITMQ_PORT": "5672",
-          "RABBITMQ_USER": "guest",
-          "RABBITMQ_PASSWORD": "guest",
           "OIDC_JWKS_URI": "http://localhost:8081/realms/resistance/protocol/openid-connect/certs",
           "LOG_SECURITY": "DEBUG"
         }

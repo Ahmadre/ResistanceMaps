@@ -91,18 +91,6 @@ services:
     networks:
       - resistance-network
 
-  rabbitmq:
-    image: rabbitmq:3.13-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
-    networks:
-      - resistance-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     container_name: keycloak
@@ -125,18 +113,15 @@ services:
     depends_on:
       mongodb-primary:
         condition: service_healthy
-      rabbitmq:
-        condition: service_started
       keycloak:
         condition: service_started
     environment:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/resistance?replicaSet=rs0}
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       OIDC_ISSUER_URI: http://keycloak:8080/realms/resistance
+      UPLOAD_DIR: /app/uploads
       PORT: 8080
+    volumes:
+      - backend_uploads:/app/uploads
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -146,6 +131,7 @@ services:
 volumes:
   mongodb_primary_data:
   mongodb_secondary_data:
+  backend_uploads:
 
 #############################################################################
 # Networks

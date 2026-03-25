@@ -1,9 +1,9 @@
 package dev.resistance.maps.marker
 
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import dev.resistance.maps.marker.MarkerUpdateRequest
 
 @RestController
 @RequestMapping("/api/markers")
@@ -23,7 +23,12 @@ class MarkerController(private val service: MarkerService) {
     ) = service.publicMarkersInViewport(south, west, north, east, page, size)
 
     @GetMapping("/me")
-    fun myMarkers(auth: Authentication) = service.myMarkers(auth)
+    @PreAuthorize("isAuthenticated()")
+    fun myMarkers(auth: Authentication) = service.getAccessibleMarkers(auth)
+
+    @GetMapping("/{id}")
+    fun getMarker(@PathVariable id: String): ResponseEntity<Marker> =
+        service.getMarker(id)?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -34,10 +39,42 @@ class MarkerController(private val service: MarkerService) {
     fun update(
         @PathVariable id: String,
         @RequestBody req: MarkerUpdateRequest,
-        auth: Authentication
+        auth: Authentication,
     ) = service.updateMarker(id, req, auth)
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    fun delete(@PathVariable id: String, auth: Authentication) = service.deleteMarker(id, auth)
+    fun delete(@PathVariable id: String, auth: Authentication): ResponseEntity<Void> {
+        service.deleteMarker(id, auth)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{id}/share-token")
+    @PreAuthorize("isAuthenticated()")
+    fun generateToken(
+        @PathVariable id: String,
+        @RequestParam(defaultValue = "false") isPublic: Boolean,
+        auth: Authentication,
+    ): Marker = service.generateShareToken(id, isPublic, auth)
+
+    @DeleteMapping("/{id}/share-token")
+    @PreAuthorize("isAuthenticated()")
+    fun revokeToken(
+        @PathVariable id: String,
+        @RequestParam(defaultValue = "false") isPublic: Boolean,
+        auth: Authentication,
+    ): Marker = service.revokeShareToken(id, isPublic, auth)
+
+    @PostMapping("/{id}/verify-password")
+    fun verifyPassword(@PathVariable id: String, @RequestBody req: PasswordCheckRequest): ResponseEntity<Map<String, Boolean>> {
+        val marker = service.getMarker(id) ?: return ResponseEntity.notFound().build()
+        val valid = service.verifyPassword(marker, req.password)
+        return ResponseEntity.ok(mapOf("valid" to valid))
+    }
+
+    @GetMapping("/shared/{token}")
+    fun getByToken(@PathVariable token: String): ResponseEntity<Marker> =
+        service.getByShareToken(token)?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
 }
+
+data class PasswordCheckRequest(val password: String)
