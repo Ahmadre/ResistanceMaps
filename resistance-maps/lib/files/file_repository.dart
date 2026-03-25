@@ -8,7 +8,7 @@ class FileRepository {
 
   Future<FileMetadataModel> upload(List<int> bytes, String fileName, String contentType) async {
     final formData = FormData.fromMap({
-      'file': MultipartFile.fromBytes(bytes, filename: fileName, contentType: DioMediaType.parse(contentType)),
+      'file': MultipartFile.fromBytes(bytes, filename: fileName, contentType: DioMediaType(contentType.split('/').first, contentType.split('/').last)),
     });
     final Response res = await api.dio.post('/api/files/upload', data: formData);
     return FileMetadataModel.fromJson(res.data as Map<String, dynamic>);

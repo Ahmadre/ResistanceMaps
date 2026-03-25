@@ -13,10 +13,9 @@ class AuthInterceptor extends Interceptor {
   final List<Completer<void>> _refreshWaiters = [];
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    // Do not attach token to public endpoints
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final path = options.path;
-    final isPublic = path.contains('/api/markers/public');
+    final isPublic = path.contains('/public') || path.contains('/shared/');
     if (!isPublic) {
       final session = _storage.load();
       final token = session?.accessToken;
@@ -24,11 +23,11 @@ class AuthInterceptor extends Interceptor {
         options.headers['Authorization'] = 'Bearer $token';
       }
     }
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     final res = err.response;
     if (res?.statusCode == 401) {
       final refreshed = await _handleTokenRefresh();
@@ -48,7 +47,7 @@ class AuthInterceptor extends Interceptor {
     final dio = Dio();
     // Respect same rule on retry (no auth for public endpoints)
     final path = requestOptions.path;
-    final isPublic = path.contains('/api/markers/public');
+    final isPublic = path.contains('/public') || path.contains('/shared/');
     if (!isPublic) {
       final session = _storage.load();
       if (session != null && session.accessToken.isNotEmpty) {

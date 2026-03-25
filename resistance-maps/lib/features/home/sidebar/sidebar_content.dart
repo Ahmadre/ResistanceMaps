@@ -11,6 +11,7 @@ import '../../../routes/route_model.dart';
 import '../../../groups/group_bloc.dart';
 import '../../../groups/group_model.dart';
 import '../../../connections/connection_bloc.dart';
+import '../../../connections/connection_model.dart';
 import '../../../lists/map_list_bloc.dart';
 import '../../../lists/map_list_model.dart';
 
@@ -233,8 +234,8 @@ class _SidebarContentState extends State<SidebarContent> {
     );
   }
 
-  Widget _connectionTile(BuildContext context, dynamic conn, {bool isPending = false, bool isSent = false}) {
-    final String label = isPending ? conn.requesterId : (isSent ? conn.targetId : (conn.requesterId));
+  Widget _connectionTile(BuildContext context, ConnectionModel conn, {bool isPending = false, bool isSent = false}) {
+    final String label = isPending ? conn.requesterId : (isSent ? conn.targetId : conn.requesterId);
     return ListTile(
       dense: true,
       leading: const Icon(Icons.person, color: Color(0xFF00F5A4), size: 18),

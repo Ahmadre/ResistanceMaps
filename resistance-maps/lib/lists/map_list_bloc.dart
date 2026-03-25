@@ -27,7 +27,7 @@ class CreateMapList extends MapListEvent {
   final List<String>? markerIds;
   final List<String>? routeIds;
   @override
-  List<Object?> get props => [title];
+  List<Object?> get props => [title, description, visibility, groupId, markerIds, routeIds];
 }
 
 class UpdateMapList extends MapListEvent {
@@ -38,7 +38,7 @@ class UpdateMapList extends MapListEvent {
   final List<String>? markerIds;
   final List<String>? routeIds;
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [id, title, description, markerIds, routeIds];
 }
 
 class DeleteMapList extends MapListEvent {

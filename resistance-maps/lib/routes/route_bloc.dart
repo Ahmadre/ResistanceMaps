@@ -45,7 +45,7 @@ class CreateRoute extends RouteEvent {
   final String? webLink;
   final String? password;
   @override
-  List<Object?> get props => [title];
+  List<Object?> get props => [title, description, waypoints, visibility, groupId, tags, webLink, password];
 }
 
 class UpdateRoute extends RouteEvent {
@@ -57,7 +57,7 @@ class UpdateRoute extends RouteEvent {
   final String? visibility;
   final List<String>? tags;
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [id, title, description, waypoints, visibility, tags];
 }
 
 class DeleteRoute extends RouteEvent {

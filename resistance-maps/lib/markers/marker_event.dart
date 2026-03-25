@@ -67,7 +67,7 @@ class CreateMarker extends MarkerEvent {
   final String? password;
 
   @override
-  List<Object?> get props => [title, lat, lng, description, tags, visibility];
+  List<Object?> get props => [title, lat, lng, description, tags, visibility, groupId, webLink, password];
 }
 
 class UpdateMarker extends MarkerEvent {
