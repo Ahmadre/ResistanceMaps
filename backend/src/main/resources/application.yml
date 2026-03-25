@@ -18,8 +18,12 @@ spring:
           jwk-set-uri: ${OIDC_JWKS_URI:http://keycloak:8080/realms/resistance/protocol/openid-connect/certs}
 
 app:
-  storage:
-    upload-dir: ${UPLOAD_DIR:./uploads}
+  s3:
+    endpoint: ${S3_ENDPOINT:http://localhost:9000}
+    access-key: ${S3_ACCESS_KEY:minioadmin}
+    secret-key: ${S3_SECRET_KEY:minioadmin}
+    bucket: ${S3_BUCKET:resistance-files}
+    region: ${S3_REGION:us-east-1}
 
 management:
   endpoints:

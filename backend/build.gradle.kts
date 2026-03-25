@@ -40,6 +40,10 @@ dependencies {
     // Mongo
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
+    // S3 / MinIO
+    implementation(platform("software.amazon.awssdk:bom:2.25.60"))
+    implementation("software.amazon.awssdk:s3")
+
     // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

@@ -1,33 +1,29 @@
 package dev.resistance.maps.file
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
-import org.springframework.core.io.UrlResource
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.util.*
 
 @Service
 class FileStorageService(
     private val repo: FileMetadataRepository,
-    @Value("\${app.storage.upload-dir:./uploads}") uploadDir: String,
+    private val s3: S3Client,
+    @Value("\${app.s3.bucket}") private val bucket: String,
 ) {
-    private val rootPath: Path = Paths.get(uploadDir).toAbsolutePath().normalize()
-
     companion object {
         val ALLOWED_IMAGE_TYPES = setOf("image/jpeg", "image/png", "image/webp")
         val ALLOWED_DOCUMENT_TYPES = setOf("application/pdf")
         val ALLOWED_TYPES = ALLOWED_IMAGE_TYPES + ALLOWED_DOCUMENT_TYPES
         const val MAX_IMAGES = 10
-    }
-
-    init {
-        Files.createDirectories(rootPath)
     }
 
     fun storeFile(file: MultipartFile, auth: Authentication): FileMetadata {
@@ -37,21 +33,23 @@ class FileStorageService(
         }
         val originalName = file.originalFilename?.replace("..", "") ?: "unnamed"
         val extension = originalName.substringAfterLast('.', "bin")
-        val storedName = "${UUID.randomUUID()}.$extension"
-        val targetPath = rootPath.resolve(storedName).normalize()
+        val objectKey = "${UUID.randomUUID()}.$extension"
 
-        if (!targetPath.startsWith(rootPath)) {
-            throw IllegalArgumentException("Invalid file path")
-        }
-
-        Files.copy(file.inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
+        s3.putObject(
+            PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .contentType(contentType)
+                .build(),
+            RequestBody.fromInputStream(file.inputStream, file.size),
+        )
 
         return repo.save(
             FileMetadata(
                 originalName = originalName,
                 contentType = contentType,
                 size = file.size,
-                storagePath = storedName,
+                storagePath = objectKey,
                 uploadedBy = auth.name,
             )
         )
@@ -59,20 +57,25 @@ class FileStorageService(
 
     fun loadFile(id: String): Pair<FileMetadata, Resource>? {
         val meta = repo.findById(id).orElse(null) ?: return null
-        val filePath = rootPath.resolve(meta.storagePath).normalize()
-        if (!filePath.startsWith(rootPath)) return null
-        val resource = UrlResource(filePath.toUri())
-        return if (resource.exists() && resource.isReadable) meta to resource else null
+        val response = s3.getObject(
+            GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(meta.storagePath)
+                .build()
+        )
+        return meta to InputStreamResource(response)
     }
 
     fun deleteFile(id: String, auth: Authentication) {
         val meta = repo.findById(id).orElseThrow { NoSuchElementException("File not found") }
         val isSuperAdmin = auth.authorities.any { it.authority == "ROLE_SUPERADMIN" }
         if (meta.uploadedBy != auth.name && !isSuperAdmin) throw IllegalAccessException("Not allowed")
-        val filePath = rootPath.resolve(meta.storagePath).normalize()
-        if (filePath.startsWith(rootPath)) {
-            Files.deleteIfExists(filePath)
-        }
+        s3.deleteObject(
+            DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(meta.storagePath)
+                .build()
+        )
         repo.delete(meta)
     }
 
