@@ -3,7 +3,7 @@
   "tasks": [
     {
       "label": "Start local infra (Docker)",
-      "detail": "Starts MongoDB, RabbitMQ and Keycloak for local debugging",
+      "detail": "Starts MongoDB, MinIO and Keycloak for local debugging",
       "type": "shell",
       "command": "docker compose -f docker-compose.local.yml up -d",
       "options": {

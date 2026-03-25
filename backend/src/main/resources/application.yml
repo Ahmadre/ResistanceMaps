@@ -10,7 +10,7 @@ spring:
     name: resistance-maps
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://mongo1:27017,mongo2:27018,mongo3:27019/resistance?replicaSet=rs0}
+      uri: ${MONGODB_URI:mongodb://mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/resistance?replicaSet=rs0}
   security:
     oauth2:
       resourceserver:

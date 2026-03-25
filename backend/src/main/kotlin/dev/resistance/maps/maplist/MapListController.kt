@@ -12,6 +12,10 @@ class MapListController(private val service: MapListService) {
     @GetMapping("/public")
     fun listPublic(): List<MapList> = service.publicLists()
 
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    fun myLists(auth: Authentication): List<MapList> = service.getAccessibleLists(auth)
+
     @GetMapping("/{id}")
     fun get(@PathVariable id: String): ResponseEntity<MapList> =
         service.getList(id)?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()

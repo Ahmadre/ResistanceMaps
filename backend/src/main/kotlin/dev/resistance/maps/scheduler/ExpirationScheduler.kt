@@ -6,13 +6,11 @@ import dev.resistance.maps.route.MapRouteRepository
 import dev.resistance.maps.share.ShareService
 import dev.resistance.maps.share.ResourceType
 import org.slf4j.LoggerFactory
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-@EnableScheduling
 class ExpirationScheduler(
     private val markerRepo: MarkerRepository,
     private val routeRepo: MapRouteRepository,
@@ -28,21 +26,21 @@ class ExpirationScheduler(
         val expiredMarkers = markerRepo.findAllByExpiresAtNotNullAndExpiresAtBefore(now)
         if (expiredMarkers.isNotEmpty()) {
             log.info("Deleting {} expired markers", expiredMarkers.size)
-            expiredMarkers.forEach { shareService.removeAllSharesForResource(ResourceType.MARKER, it.id!!) }
+            expiredMarkers.forEach { marker -> marker.id?.let { shareService.removeAllSharesForResource(ResourceType.MARKER, it) } }
             markerRepo.deleteAll(expiredMarkers)
         }
 
         val expiredRoutes = routeRepo.findAllByExpiresAtNotNullAndExpiresAtBefore(now)
         if (expiredRoutes.isNotEmpty()) {
             log.info("Deleting {} expired routes", expiredRoutes.size)
-            expiredRoutes.forEach { shareService.removeAllSharesForResource(ResourceType.ROUTE, it.id!!) }
+            expiredRoutes.forEach { route -> route.id?.let { shareService.removeAllSharesForResource(ResourceType.ROUTE, it) } }
             routeRepo.deleteAll(expiredRoutes)
         }
 
         val expiredLists = listRepo.findAllByExpiresAtNotNullAndExpiresAtBefore(now)
         if (expiredLists.isNotEmpty()) {
             log.info("Deleting {} expired lists", expiredLists.size)
-            expiredLists.forEach { shareService.removeAllSharesForResource(ResourceType.LIST, it.id!!) }
+            expiredLists.forEach { list -> list.id?.let { shareService.removeAllSharesForResource(ResourceType.LIST, it) } }
             listRepo.deleteAll(expiredLists)
         }
 

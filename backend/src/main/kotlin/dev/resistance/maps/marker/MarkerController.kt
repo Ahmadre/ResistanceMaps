@@ -66,7 +66,7 @@ class MarkerController(private val service: MarkerService) {
     ): Marker = service.revokeShareToken(id, isPublic, auth)
 
     @PostMapping("/{id}/verify-password")
-    fun verifyPassword(@PathVariable id: String, @RequestBody req: PasswordCheckRequest): ResponseEntity<Map<String, Boolean>> {
+    fun verifyPassword(@PathVariable id: String, @RequestBody req: PasswordVerifyRequest): ResponseEntity<Map<String, Boolean>> {
         val marker = service.getMarker(id) ?: return ResponseEntity.notFound().build()
         val valid = service.verifyPassword(marker, req.password)
         return ResponseEntity.ok(mapOf("valid" to valid))
@@ -77,4 +77,4 @@ class MarkerController(private val service: MarkerService) {
         service.getByShareToken(token)?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
 }
 
-data class PasswordCheckRequest(val password: String)
+data class PasswordVerifyRequest(val password: String)

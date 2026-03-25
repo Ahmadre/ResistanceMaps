@@ -13,6 +13,7 @@ data class MapList(
     val description: String? = null,
     @Indexed val visibility: Visibility = Visibility.PUBLIC,
     @Indexed val createdBy: String,
+    @Indexed val groupId: String? = null,
     val markerIds: List<String> = emptyList(),
     val routeIds: List<String> = emptyList(),
     @Indexed val expiresAt: Instant? = null,

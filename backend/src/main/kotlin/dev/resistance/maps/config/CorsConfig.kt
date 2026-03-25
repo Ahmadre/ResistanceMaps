@@ -13,7 +13,7 @@ class CorsConfig {
         val config = CorsConfiguration().apply {
             allowCredentials = true
             // Replace with specific origin in production
-            allowedOrigins = listOf("http://localhost:7357")
+            allowedOriginPatterns = listOf(System.getenv("CORS_ALLOWED_ORIGINS") ?: "http://localhost:7357")
             allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             exposedHeaders = listOf("Authorization", "Content-Type")

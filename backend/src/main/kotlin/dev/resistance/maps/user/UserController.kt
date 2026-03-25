@@ -1,5 +1,7 @@
 package dev.resistance.maps.user
 
+import dev.resistance.maps.connection.ConnectionRepository
+import dev.resistance.maps.group.GroupMemberRepository
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -10,8 +12,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/users")
 class UserController(
     private val service: UserProfileService,
-    private val groupMemberRepo: dev.resistance.maps.group.GroupMemberRepository,
-    private val connectionRepo: dev.resistance.maps.connection.ConnectionRepository,
+    private val groupMemberRepo: GroupMemberRepository,
+    private val connectionRepo: ConnectionRepository,
 ) {
 
     @GetMapping("/me")

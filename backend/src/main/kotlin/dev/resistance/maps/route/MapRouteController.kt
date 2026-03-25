@@ -48,7 +48,7 @@ class MapRouteController(private val service: MapRouteService) {
         service.revokeShareToken(id, isPublic, auth)
 
     @PostMapping("/{id}/verify-password")
-    fun verifyPassword(@PathVariable id: String, @RequestBody req: PasswordRequest): ResponseEntity<Map<String, Boolean>> {
+    fun verifyPassword(@PathVariable id: String, @RequestBody req: PasswordVerifyRequest): ResponseEntity<Map<String, Boolean>> {
         val route = service.getRoute(id) ?: return ResponseEntity.notFound().build()
         val valid = service.verifyPassword(route, req.password)
         return ResponseEntity.ok(mapOf("valid" to valid))
@@ -59,4 +59,4 @@ class MapRouteController(private val service: MapRouteService) {
         service.getByShareToken(token)?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
 }
 
-data class PasswordRequest(val password: String)
+data class PasswordVerifyRequest(val password: String)

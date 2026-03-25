@@ -45,7 +45,13 @@ class GroupController(private val service: GroupService) {
 
     @GetMapping("/{id}/members")
     @PreAuthorize("isAuthenticated()")
-    fun members(@PathVariable id: String): List<GroupMember> = service.getMembers(id)
+    fun members(@PathVariable id: String, auth: Authentication): List<GroupMember> {
+        val isSuperAdmin = auth.authorities.any { it.authority == "ROLE_SUPERADMIN" }
+        if (!isSuperAdmin) {
+            service.getMembership(id, auth.name) ?: throw IllegalAccessException("Not a member of this group")
+        }
+        return service.getMembers(id)
+    }
 
     @PostMapping("/{id}/members")
     @PreAuthorize("isAuthenticated()")

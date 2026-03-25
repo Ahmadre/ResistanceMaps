@@ -1,6 +1,7 @@
 package dev.resistance.maps.route
 
 import dev.resistance.maps.group.GroupMemberRepository
+import dev.resistance.maps.group.GroupRole
 import dev.resistance.maps.marker.Visibility
 import dev.resistance.maps.share.ResourceType
 import dev.resistance.maps.share.ShareRepository
@@ -122,7 +123,7 @@ class MapRouteService(
         if (isSuperAdmin) return
         if (route.createdBy != auth.name) {
             val isGroupAdmin = route.groupId?.let { groupMemberRepo.findByGroupIdAndUserId(it, auth.name) }
-                ?.let { it.role == dev.resistance.maps.group.GroupRole.ADMIN || it.role == dev.resistance.maps.group.GroupRole.OWNER }
+                ?.let { it.role == GroupRole.ADMIN || it.role == GroupRole.OWNER }
                 ?: false
             if (!isGroupAdmin) throw IllegalAccessException("Not allowed")
         }

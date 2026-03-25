@@ -1,5 +1,6 @@
 package dev.resistance.maps.maplist
 
+import dev.resistance.maps.group.GroupMemberRepository
 import dev.resistance.maps.marker.Visibility
 import dev.resistance.maps.share.ResourceType
 import dev.resistance.maps.share.ShareRepository
@@ -13,6 +14,7 @@ import java.util.*
 class MapListService(
     private val repo: MapListRepository,
     private val shareRepo: ShareRepository,
+    private val groupMemberRepo: GroupMemberRepository,
 ) {
     private val encoder = BCryptPasswordEncoder()
 
@@ -22,6 +24,23 @@ class MapListService(
 
     fun getByShareToken(token: String): MapList? = repo.findByShareToken(token) ?: repo.findByPublicShareToken(token)
 
+    fun getAccessibleLists(auth: Authentication): List<MapList> {
+        val userId = auth.name
+        val isSuperAdmin = auth.authorities.any { it.authority == "ROLE_SUPERADMIN" }
+        if (isSuperAdmin) return repo.findAll()
+
+        val own = repo.findAllByCreatedBy(userId)
+        val public = publicLists()
+        val groupIds = groupMemberRepo.findAllByUserId(userId).map { it.groupId }
+        val groupLists = if (groupIds.isNotEmpty()) groupIds.flatMap { repo.findAllByGroupId(it) } else emptyList()
+        val userShares = shareRepo.findAllBySharedWithUserId(userId)
+            .filter { it.resourceType == ResourceType.LIST }.map { it.resourceId }
+        val groupShares = if (groupIds.isNotEmpty()) shareRepo.findAllBySharedWithGroupIdIn(groupIds)
+            .filter { it.resourceType == ResourceType.LIST }.map { it.resourceId } else emptyList()
+        val sharedLists = (userShares + groupShares).distinct().let { if (it.isNotEmpty()) repo.findAllByIdIn(it) else emptyList() }
+        return (own + public + groupLists + sharedLists).distinctBy { it.id }
+    }
+
     fun createList(req: CreateListRequest, auth: Authentication): MapList {
         return repo.save(
             MapList(
@@ -29,6 +48,7 @@ class MapListService(
                 description = req.description,
                 visibility = req.visibility ?: Visibility.PUBLIC,
                 createdBy = auth.name,
+                groupId = req.groupId,
                 markerIds = req.markerIds ?: emptyList(),
                 routeIds = req.routeIds ?: emptyList(),
                 expiresAt = req.expiresAt,
@@ -85,7 +105,12 @@ class MapListService(
     private fun requireWriteAccess(list: MapList, auth: Authentication) {
         val isSuperAdmin = auth.authorities.any { it.authority == "ROLE_SUPERADMIN" }
         if (isSuperAdmin) return
-        if (list.createdBy != auth.name) throw IllegalAccessException("Not allowed")
+        if (list.createdBy == auth.name) return
+        list.groupId?.let { gid ->
+            val member = groupMemberRepo.findByGroupIdAndUserId(gid, auth.name)
+            if (member != null && (member.role == dev.resistance.maps.group.GroupRole.ADMIN || member.role == dev.resistance.maps.group.GroupRole.OWNER)) return
+        }
+        throw IllegalAccessException("Not allowed to modify this list")
     }
 }
 
@@ -93,6 +118,7 @@ data class CreateListRequest(
     val title: String,
     val description: String? = null,
     val visibility: Visibility? = null,
+    val groupId: String? = null,
     val markerIds: List<String>? = null,
     val routeIds: List<String>? = null,
     val expiresAt: Instant? = null,
