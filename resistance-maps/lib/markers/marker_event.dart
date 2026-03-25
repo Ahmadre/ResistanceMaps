@@ -10,6 +10,10 @@ class LoadPublicMarkers extends MarkerEvent {
   const LoadPublicMarkers();
 }
 
+class LoadAccessibleMarkers extends MarkerEvent {
+  const LoadAccessibleMarkers();
+}
+
 class SelectMarker extends MarkerEvent {
   const SelectMarker(this.markerId);
   final String? markerId;
@@ -48,6 +52,9 @@ class CreateMarker extends MarkerEvent {
     this.description,
     this.tags,
     this.visibility,
+    this.groupId,
+    this.webLink,
+    this.password,
   });
   final String title;
   final double lat;
@@ -55,6 +62,9 @@ class CreateMarker extends MarkerEvent {
   final String? description;
   final List<String>? tags;
   final String? visibility;
+  final String? groupId;
+  final String? webLink;
+  final String? password;
 
   @override
   List<Object?> get props => [title, lat, lng, description, tags, visibility];

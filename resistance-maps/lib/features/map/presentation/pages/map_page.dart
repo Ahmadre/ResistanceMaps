@@ -13,6 +13,7 @@ import 'package:jwt_decode/jwt_decode.dart';
 import '../../../../markers/marker_bloc.dart';
 import '../../../../markers/marker_model.dart';
 import '../../../../markers/marker_repository.dart';
+import '../../../../routes/route_bloc.dart';
 import '../../../../core/api_client.dart';
 import '../../../../auth/application/auth_bloc.dart';
 import '../../../../auth/application/oidc_client.dart';
@@ -804,5 +805,262 @@ extension on _MapPageState {
         ],
       ),
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MapPageContent — used inside AppShell (reads BLoCs from parent context)
+// ---------------------------------------------------------------------------
+
+class MapPageContent extends StatefulWidget {
+  const MapPageContent({super.key});
+  @override
+  State<MapPageContent> createState() => _MapPageContentState();
+}
+
+class _MapPageContentState extends State<MapPageContent> with TickerProviderStateMixin {
+  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(child: _buildMapView()),
+        _buildTopRightButtons(),
+        _buildContentDetailCard(),
+      ],
+    );
+  }
+
+  Widget _buildMapView() {
+    return BlocListener<MarkerBloc, MarkerState>(
+      listenWhen: (prev, curr) => prev.selectedMarkerId != curr.selectedMarkerId,
+      listener: (context, state) {
+        final sel = state.selected;
+        if (sel != null) {
+          _mapController.animateTo(dest: LatLng(sel.lat, sel.lng), zoom: 15, curve: Curves.easeInOutCubic, duration: const Duration(milliseconds: 650));
+        }
+      },
+      child: BlocBuilder<MarkerBloc, MarkerState>(
+        builder: (context, markerState) {
+          return BlocBuilder<RouteBloc, RouteState>(
+            builder: (context, routeState) {
+              final visibleMarkers = markerState.markers.map((m) => Marker(
+                point: LatLng(m.lat, m.lng), width: 36, height: 36,
+                child: GestureDetector(
+                  onTap: () => context.read<MarkerBloc>().add(SelectMarker(m.id)),
+                  child: _MarkerIcon(iconUrl: m.iconUrl, selected: markerState.selectedMarkerId == m.id),
+                ),
+              )).toList();
+
+              final points = visibleMarkers.map((m) => m.point).toList();
+              CameraFit? fit;
+              if (points.length >= 2) {
+                final bounds = LatLngBounds.fromPoints(points);
+                if ((bounds.north != bounds.south) || (bounds.east != bounds.west)) {
+                  fit = CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48));
+                }
+              }
+
+              final polylines = <Polyline>[];
+              for (final route in routeState.routes) {
+                if (route.waypoints.length >= 2) {
+                  final sel = routeState.selectedRouteId == route.id;
+                  polylines.add(Polyline(
+                    points: route.waypoints.map((wp) => LatLng(wp.lat, wp.lng)).toList(),
+                    color: sel ? const Color(0xFF00F5A4) : const Color(0xFF00F5A4).withValues(alpha: 0.5),
+                    strokeWidth: sel ? 4.0 : 2.5,
+                  ));
+                }
+              }
+
+              return FlutterMap(
+                mapController: _mapController.mapController,
+                options: MapOptions(
+                  initialZoom: 12,
+                  initialCenter: points.isNotEmpty ? LatLng(points.first.latitude, points.first.longitude) : const LatLng(52.52, 13.405),
+                  initialCameraFit: fit,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    subdomains: const ['a', 'b', 'c', 'd'],
+                    retinaMode: true, userAgentPackageName: 'dev.resistance.maps', tileProvider: NetworkTileProvider(),
+                  ),
+                  if (polylines.isNotEmpty) PolylineLayer(polylines: polylines),
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 45, size: const Size(36, 36), markers: visibleMarkers,
+                      builder: (context, markers) => Container(
+                        decoration: const BoxDecoration(color: Color(0xFF2A2B30), shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)]),
+                        alignment: Alignment.center,
+                        child: Text(markers.length.toString(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTopRightButtons() {
+    final t = I18Next.of(context)!;
+    return Positioned(
+      right: 16, top: 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              if (authState.session == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), backgroundColor: const Color(0xFF1A1B1F), foregroundColor: Colors.white),
+                  onPressed: () => _openCreateModal(context),
+                  icon: const Icon(Icons.add_location_alt, size: 18),
+                  label: Text(t.t('map.markers.add')),
+                ),
+              );
+            },
+          ),
+          BlocBuilder<MarkerBloc, MarkerState>(
+            builder: (context, state) => ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), backgroundColor: const Color(0xFF1A1B1F), foregroundColor: Colors.white),
+              onPressed: () {
+                final pts = state.markers.map((m) => LatLng(m.lat, m.lng)).toList();
+                if (pts.isEmpty) return;
+                final bounds = LatLngBounds.fromPoints(pts);
+                _mapController.animateTo(dest: LatLng((bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2), zoom: 11, duration: const Duration(milliseconds: 500));
+              },
+              icon: const Icon(Icons.fit_screen, size: 18),
+              label: Text(t.t('map.fitAll')),
+            ),
+          ),
+          const SizedBox(height: 8),
+          BlocBuilder<MarkerBloc, MarkerState>(
+            builder: (context, state) {
+              final sel = state.selected;
+              return ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), foregroundColor: Colors.white),
+                onPressed: sel == null ? null : () => _mapController.animateTo(dest: LatLng(sel.lat, sel.lng), zoom: 15, curve: Curves.easeInOutCubic, duration: const Duration(milliseconds: 500)),
+                icon: const Icon(Icons.my_location, size: 18),
+                label: Text(t.t('map.centerSelection')),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentDetailCard() {
+    return Positioned(
+      right: 16, bottom: 16,
+      child: BlocBuilder<MarkerBloc, MarkerState>(
+        builder: (context, state) {
+          final sel = state.selected;
+          if (sel == null) return const SizedBox.shrink();
+          return _DetailCard(
+            marker: sel,
+            onClose: () => context.read<MarkerBloc>().add(const SelectMarker(null)),
+            onEdit: () => _openEditModal(context, sel),
+            onDelete: () => _confirmDeleteContent(context, sel.id),
+          );
+        },
+      ),
+    );
+  }
+
+  void _openCreateModal(BuildContext context) {
+    final titleCtrl = TextEditingController();
+    final center = _mapController.mapController.camera.center;
+    double lat = center.latitude;
+    double lng = center.longitude;
+    final t = I18Next.of(context)!;
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (ctx) => [
+        WoltModalSheetPage(
+          hasSabGradient: false,
+          topBarTitle: Text(t.t('map.markers.createTitle')),
+          trailingNavBarWidget: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(ctx).pop()),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextField(controller: titleCtrl, decoration: InputDecoration(labelText: t.t('common.title'))),
+              const SizedBox(height: 12),
+              Row(children: [
+                Expanded(child: TextFormField(initialValue: lat.toStringAsFixed(6), decoration: InputDecoration(labelText: t.t('map.markers.lat')), onChanged: (v) => lat = double.tryParse(v) ?? lat)),
+                const SizedBox(width: 12),
+                Expanded(child: TextFormField(initialValue: lng.toStringAsFixed(6), decoration: InputDecoration(labelText: t.t('map.markers.lng')), onChanged: (v) => lng = double.tryParse(v) ?? lng)),
+              ]),
+              const SizedBox(height: 16),
+              Align(alignment: Alignment.centerRight, child: ElevatedButton.icon(
+                onPressed: () { final title = titleCtrl.text.trim(); if (title.isEmpty) return; context.read<MarkerBloc>().add(CreateMarker(title: title, lat: lat, lng: lng)); Navigator.of(ctx).pop(); },
+                icon: const Icon(Icons.check), label: Text(t.t('common.create')),
+              )),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openEditModal(BuildContext context, MarkerModel marker) {
+    final titleCtrl = TextEditingController(text: marker.title);
+    double lat = marker.lat;
+    double lng = marker.lng;
+    final t = I18Next.of(context)!;
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (ctx) => [
+        WoltModalSheetPage(
+          hasSabGradient: false,
+          topBarTitle: Text(t.t('map.markers.editTitle')),
+          trailingNavBarWidget: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(ctx).pop()),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextField(controller: titleCtrl, decoration: InputDecoration(labelText: t.t('common.title'))),
+              const SizedBox(height: 12),
+              Row(children: [
+                Expanded(child: TextFormField(initialValue: lat.toStringAsFixed(6), decoration: InputDecoration(labelText: t.t('map.markers.lat')), onChanged: (v) => lat = double.tryParse(v) ?? lat)),
+                const SizedBox(width: 12),
+                Expanded(child: TextFormField(initialValue: lng.toStringAsFixed(6), decoration: InputDecoration(labelText: t.t('map.markers.lng')), onChanged: (v) => lng = double.tryParse(v) ?? lng)),
+              ]),
+              const SizedBox(height: 16),
+              Align(alignment: Alignment.centerRight, child: ElevatedButton.icon(
+                onPressed: () { final title = titleCtrl.text.trim(); if (title.isEmpty) return; context.read<MarkerBloc>().add(UpdateMarker(marker.id, title: title != marker.title ? title : null, lat: lat != marker.lat ? lat : null, lng: lng != marker.lng ? lng : null)); Navigator.of(ctx).pop(); },
+                icon: const Icon(Icons.check), label: Text(t.t('common.save')),
+              )),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _confirmDeleteContent(BuildContext context, String id) {
+    final t = I18Next.of(context)!;
+    showDialog(context: context, builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF1A1B1F),
+      title: Text(t.t('map.markers.deleteTitle')),
+      content: Text(t.t('map.markers.deleteContent')),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(t.t('common.cancel'))),
+        TextButton(onPressed: () { context.read<MarkerBloc>().add(DeleteMarker(id)); Navigator.of(ctx).pop(); }, child: Text(t.t('common.delete'), style: const TextStyle(color: Colors.redAccent))),
+      ],
+    ));
   }
 }

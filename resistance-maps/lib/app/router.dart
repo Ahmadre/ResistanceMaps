@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:routemaster/routemaster.dart';
-import '../features/map/presentation/pages/map_page.dart';
+import '../features/home/home_page.dart';
 import '../auth/application/auth_bloc.dart';
 import '../auth/presentation/auth_callback_page.dart';
 import '../auth/presentation/account_settings_page.dart';
@@ -9,7 +9,7 @@ import '../auth/presentation/account_settings_page.dart';
 RouteMap get appRoutes => RouteMap(
   onUnknownRoute: (path) => const Redirect('/'),
   routes: {
-    '/': (route) => const MaterialPage(child: MapPage()),
+    '/': (route) => const MaterialPage(child: HomePage()),
     '/callback': (route) => const MaterialPage(child: AuthCallbackPage()),
     '/account': (route) => const MaterialPage(child: AccountSettingsPage()),
     '/admin': (route) => GuardedPage(

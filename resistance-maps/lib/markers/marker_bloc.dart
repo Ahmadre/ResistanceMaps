@@ -12,6 +12,7 @@ part 'marker_state.dart';
 class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
   MarkerBloc(this.repo) : super(const MarkerState.initial()) {
     on<LoadPublicMarkers>(_onLoadPublic);
+    on<LoadAccessibleMarkers>(_onLoadAccessible);
     on<SelectMarker>(_onSelect);
     on<ViewportChanged>(_onViewportChanged, transformer: _debounce(const Duration(milliseconds: 200)));
     on<LoadNextPage>(_onLoadNextPage);
@@ -27,6 +28,16 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
     emit(state.copyWith(loading: true));
     try {
       final markers = await repo.fetchPublic();
+      emit(state.copyWith(loading: false, markers: markers));
+    } catch (e) {
+      emit(state.copyWith(loading: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onLoadAccessible(LoadAccessibleMarkers event, Emitter<MarkerState> emit) async {
+    emit(state.copyWith(loading: true));
+    try {
+      final markers = await repo.fetchAccessible();
       emit(state.copyWith(loading: false, markers: markers));
     } catch (e) {
       emit(state.copyWith(loading: false, error: e.toString()));
@@ -88,6 +99,9 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
         description: event.description,
         tags: event.tags,
         visibility: event.visibility,
+        groupId: event.groupId,
+        webLink: event.webLink,
+        password: event.password,
       );
       emit(state.copyWith(markers: [created, ...state.markers]));
     } catch (e) {

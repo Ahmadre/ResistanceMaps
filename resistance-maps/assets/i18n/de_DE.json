@@ -7,6 +7,8 @@
     "open_now": "Jetzt geöffnet",
     "nearest": "Nächste",
     "filters": "Filter",
+    "fitAll": "Alle anzeigen",
+    "centerSelection": "Auswahl zentrieren",
     "account": {
       "menu": {
         "settings": "Kontoeinstellungen",
@@ -25,10 +27,54 @@
   },
   "common": {
     "title": "Titel",
+    "description": "Beschreibung",
     "create": "Erstellen",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "add": "Hinzufügen",
+    "login": "Anmelden"
+  },
+  "groups": {
+    "loginRequired": "Bitte melde dich an, um deine Gruppen zu sehen.",
+    "createTitle": "Gruppe erstellen",
+    "editTitle": "Gruppe bearbeiten",
+    "deleteTitle": "Gruppe löschen?",
+    "deleteContent": "Diese Gruppe und alle Mitgliedschaften werden entfernt.",
+    "name": "Gruppenname",
+    "selectHint": "Wähle eine Gruppe aus der Seitenleiste oder erstelle eine neue.",
+    "members": "Mitglieder",
+    "addMember": "Mitglied hinzufügen",
+    "removeMember": "Entfernen",
+    "promote": "Befördern",
+    "demote": "Herabstufen",
+    "userId": "Benutzer-ID"
+  },
+  "connections": {
+    "title": "Verbindungen",
+    "loginRequired": "Bitte melde dich an, um Verbindungen zu verwalten.",
+    "inviteHint": "Benutzername oder E-Mail",
+    "invite": "Einladen",
+    "accepted": "Verbunden",
+    "pending": "Ausstehend",
+    "sent": "Gesendet",
+    "accept": "Annehmen",
+    "reject": "Ablehnen",
+    "remove": "Entfernen",
+    "empty": "Noch keine Verbindungen."
+  },
+  "lists": {
+    "loginRequired": "Bitte melde dich an, um Listen zu erstellen.",
+    "createTitle": "Liste erstellen",
+    "editTitle": "Liste bearbeiten",
+    "deleteTitle": "Liste löschen?",
+    "deleteContent": "Diese Liste wird dauerhaft entfernt.",
+    "selectHint": "Wähle eine Liste aus der Seitenleiste oder erstelle eine neue.",
+    "markers": "Marker",
+    "routes": "Routen",
+    "passwordProtected": "Passwortgeschützt",
+    "expiresAt": "Läuft ab am",
+    "shareLink": "Freigabelink"
   }
 }

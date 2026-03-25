@@ -1,72 +1,52 @@
-class MarkerModel {
-  final String id;
+class MapListModel {
+  final String? id;
   final String title;
   final String? description;
-  final double lat;
-  final double lng;
   final String visibility;
   final String? createdBy;
   final String? groupId;
-  final List<String> tags;
-  final String? coverImageId;
-  final List<String> imageIds;
-  final List<String> documentIds;
-  final String? webLink;
+  final List<String> markerIds;
+  final List<String> routeIds;
   final DateTime? expiresAt;
   final bool hasPassword;
   final String? shareToken;
   final String? publicShareToken;
-  final String? iconUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  const MarkerModel({
-    required this.id,
+  const MapListModel({
+    this.id,
     required this.title,
     this.description,
-    required this.lat,
-    required this.lng,
     this.visibility = 'PUBLIC',
     this.createdBy,
     this.groupId,
-    this.tags = const [],
-    this.coverImageId,
-    this.imageIds = const [],
-    this.documentIds = const [],
-    this.webLink,
+    this.markerIds = const [],
+    this.routeIds = const [],
     this.expiresAt,
     this.hasPassword = false,
     this.shareToken,
     this.publicShareToken,
-    this.iconUrl,
     this.createdAt,
     this.updatedAt,
   });
 
-  factory MarkerModel.fromJson(Map<String, dynamic> json) {
-    return MarkerModel(
-      id: (json['id'] ?? json['_id'] ?? '').toString(),
+  factory MapListModel.fromJson(Map<String, dynamic> json) {
+    return MapListModel(
+      id: json['id'] as String?,
       title: (json['title'] ?? '').toString(),
       description: json['description'] as String?,
-      lat: _toDouble(json['lat']),
-      lng: _toDouble(json['lng']),
       visibility: (json['visibility'] ?? 'PUBLIC').toString(),
       createdBy: json['createdBy'] as String?,
       groupId: json['groupId'] as String?,
-      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? const [],
-      coverImageId: json['coverImageId'] as String?,
-      imageIds: (json['imageIds'] as List<dynamic>?)?.cast<String>() ?? const [],
-      documentIds: (json['documentIds'] as List<dynamic>?)?.cast<String>() ?? const [],
-      webLink: json['webLink'] as String?,
+      markerIds: (json['markerIds'] as List<dynamic>?)?.cast<String>() ?? const [],
+      routeIds: (json['routeIds'] as List<dynamic>?)?.cast<String>() ?? const [],
       expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
       hasPassword: json['passwordHash'] != null,
       shareToken: json['shareToken'] as String?,
       publicShareToken: json['publicShareToken'] as String?,
-      iconUrl: (json['iconUrl'] ?? json['icon_url']) as String?,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
     );
   }
-
-  static double _toDouble(dynamic v) => v is num ? v.toDouble() : double.parse(v.toString());
 }
