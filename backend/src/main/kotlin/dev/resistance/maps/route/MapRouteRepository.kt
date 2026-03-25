@@ -4,6 +4,7 @@ import dev.resistance.maps.marker.Visibility
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
+import org.springframework.data.mongodb.repository.Query
 import java.time.Instant
 
 interface MapRouteRepository : MongoRepository<MapRoute, String> {
@@ -14,6 +15,7 @@ interface MapRouteRepository : MongoRepository<MapRoute, String> {
     fun findByShareToken(token: String): MapRoute?
     fun findByPublicShareToken(token: String): MapRoute?
     fun findAllByVisibilityAndExpiresAtBefore(visibility: Visibility, before: Instant): List<MapRoute>
+    @Query("{ 'expiresAt': { '\$ne': null, '\$lt': ?0 } }")
     fun findAllByExpiresAtNotNullAndExpiresAtBefore(before: Instant): List<MapRoute>
     fun findAllByVisibility(visibility: Visibility, pageable: Pageable): Page<MapRoute>
 }

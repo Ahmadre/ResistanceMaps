@@ -1,4 +1,5 @@
-version: "3.9"
+name: resistance-maps
+
 services:
   #############################################################################
   # MongoDB ReplicaSet - 2 Nodes + 1 Arbiter
