@@ -1,0 +1,80 @@
+{
+  "app": {
+    "title": "ResistanceMaps"
+  },
+  "map": {
+    "search": "Search...",
+    "open_now": "Open now",
+    "nearest": "Nearest",
+    "filters": "Filters",
+    "fitAll": "Show all",
+    "centerSelection": "Center selection",
+    "account": {
+      "menu": {
+        "settings": "Account Settings",
+        "logout": "Logout"
+      }
+    },
+    "markers": {
+      "add": "Add marker",
+      "createTitle": "Create new marker",
+      "editTitle": "Edit marker",
+      "lat": "Lat",
+      "lng": "Lng",
+      "deleteTitle": "Delete marker?",
+      "deleteContent": "This action cannot be undone."
+    }
+  },
+  "common": {
+    "title": "Title",
+    "description": "Description",
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "login": "Login"
+  },
+  "groups": {
+    "loginRequired": "Please log in to see your groups.",
+    "createTitle": "Create group",
+    "editTitle": "Edit group",
+    "deleteTitle": "Delete group?",
+    "deleteContent": "This group and all memberships will be removed.",
+    "name": "Group name",
+    "selectHint": "Select a group from the sidebar or create a new one.",
+    "members": "Members",
+    "addMember": "Add member",
+    "removeMember": "Remove",
+    "promote": "Promote",
+    "demote": "Demote",
+    "userId": "User ID"
+  },
+  "connections": {
+    "title": "Connections",
+    "loginRequired": "Please log in to manage connections.",
+    "inviteHint": "Username or email",
+    "invite": "Invite",
+    "accepted": "Connected",
+    "pending": "Pending",
+    "sent": "Sent",
+    "accept": "Accept",
+    "reject": "Reject",
+    "remove": "Remove",
+    "empty": "No connections yet."
+  },
+  "lists": {
+    "loginRequired": "Please log in to create lists.",
+    "createTitle": "Create list",
+    "editTitle": "Edit list",
+    "deleteTitle": "Delete list?",
+    "deleteContent": "This list will be permanently removed.",
+    "selectHint": "Select a list from the sidebar or create a new one.",
+    "markers": "Markers",
+    "routes": "Routes",
+    "passwordProtected": "Password protected",
+    "expiresAt": "Expires at",
+    "shareLink": "Share link"
+  }
+}

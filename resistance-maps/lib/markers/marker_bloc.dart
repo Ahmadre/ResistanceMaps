@@ -50,6 +50,11 @@ class MarkerBloc extends Bloc<MarkerEvent, MarkerState> {
   }
 
   Future<void> _onViewportChanged(ViewportChanged event, Emitter<MarkerState> emit) async {
+    // Guard: reject invalid coordinates (NaN / Infinity) that would cause HTTP 400
+    if (!event.south.isFinite || !event.west.isFinite ||
+        !event.north.isFinite || !event.east.isFinite) {
+      return;
+    }
     final key =
         '${event.south.toStringAsFixed(3)}:${event.west.toStringAsFixed(3)}:${event.north.toStringAsFixed(3)}:${event.east.toStringAsFixed(3)}:${event.zoom.toStringAsFixed(1)}';
     if (key == state.viewportKey && (state.loading || state.paging)) return;
